@@ -1,0 +1,3 @@
+ExpCondition,InitialPosition,InducedPercept,Block,Run,Trial,InitialDirection,resp_ans_1,resp_ans_2
+Illusion,lower,left,1,2,1,left,dec,
+Perceptual,lower,right,1,2,2,NA,inc,dec

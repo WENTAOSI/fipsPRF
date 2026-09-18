@@ -1,0 +1,2 @@
+from EyeLinkCoreGraphicsPsychoPy import EyeLinkCoreGraphicsPsychoPy
+EyeLinkCoreGraphicsPsychoPy = EyeLinkCoreGraphicsPsychoPy.EyeLinkCoreGraphicsPsychoPy

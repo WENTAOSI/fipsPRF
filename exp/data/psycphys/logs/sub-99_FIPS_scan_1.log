@@ -1,0 +1,11 @@
+ID: 99,Subject: PT, Experiment: FIPS, Session: scan
+Monitor: Scanner
+Distance = 128.7 cm
+, Width = 42.8 cm
+Pixel Width = 1920, Pixel Height = 1080
+Refresh Rate = 60 Hz
+3.2377 	WARNING 	We strongly recommend you activate the PTB sound engine in PsychoPy prefs as the preferred audio engine. Its timing is vastly superior. Your prefs are currently set to use ['sounddevice', 'PTB', 'pyo', 'pygame'] (in that order).
+4.9627 	WARNING 	Requested an unavailable screen number - using first available.
+5.6498 	EXP 	Created window1 = Window(allowGUI=False, allowStencil=False, autoLog=True, backendConf=UNKNOWN, backgroundFit=<method-wrapper '__getattribute__' of attributeSetter object at 0x7fc5d1daf520>, backgroundImage=<method-wrapper '__getattribute__' of attributeSetter object at 0x7fc5d1daf4c0>, bitsMode=UNKNOWN, blendMode='avg', bpc=(8, 8, 8), color=array([-1, -1, -1]), colorSpace='rgb', depthBits=8, fullscr=False, gamma=None, gammaErrorPolicy='raise', infoMsg=UNKNOWN, lms=UNKNOWN, monitor=<psychopy.monitors.calibTools.Monitor object at 0x7fc5a00ed580>, multiSample=False, name='window1', numSamples=2, pos=(-204, -49), screen=1, size=array([3840, 2160]), stencilBits=0, stereo=False, title='PsychoPy', units='pix', useFBO=False, useRetina=True, viewOri=0.0, viewPos=None, viewScale=None, waitBlanking=True, winType='pyglet')
+5.6498 	EXP 	window1: backgroundImage = None
+5.6498 	EXP 	window1: backgroundFit = 'cover'

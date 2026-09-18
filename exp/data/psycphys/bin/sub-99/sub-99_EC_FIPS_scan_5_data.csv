@@ -1,0 +1,17 @@
+ExpCondition,InitialPosition,InducedPercept,Block,Run,Trial,InitialDirection,resp_ans_1,resp_ans_2
+Illusion,upper,right,1,5,1,left,inc,dec
+Illusion,upper,right,1,5,2,left,dec,
+Physical,lower,none,1,5,3,NA,dec,
+Illusion,upper,left,1,5,4,right,dec,dec
+Illusion,lower,right,1,5,5,right,dec,
+Perceptual,upper,right,1,5,6,NA,dec,
+Perceptual,lower,right,1,5,7,NA,inc,
+Illusion,lower,left,1,5,8,left,inc,
+Perceptual,upper,left,1,5,9,NA,dec,
+Perceptual,lower,left,1,5,10,NA,inc,inc
+Perceptual,lower,left,1,5,11,NA,dec,
+Perceptual,upper,left,1,5,12,NA,dec,
+Physical,upper,none,1,5,13,NA,inc,
+Perceptual,upper,right,1,5,14,NA,inc,
+Perceptual,lower,right,1,5,15,NA,dec,dec
+Perceptual,upper,left,1,5,16,NA,dec,inc

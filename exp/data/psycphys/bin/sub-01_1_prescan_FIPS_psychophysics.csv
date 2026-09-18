@@ -1,0 +1,17 @@
+Start_pos,Start_dir,Start_col,Block
+upper,left,white,1
+upper,right,white,1
+lower,right,white,1
+upper,left,black,1
+lower,right,black,1
+lower,left,white,1
+upper,right,black,1
+lower,left,black,1
+upper,right,white,2
+upper,right,black,2
+lower,left,white,2
+lower,right,white,2
+upper,left,white,2
+upper,left,black,2
+lower,right,black,2
+lower,left,black,2

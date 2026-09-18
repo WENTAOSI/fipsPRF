@@ -1,0 +1,17 @@
+ExpCondition,InitialPosition,InducedPercept,Block,Run,Trial,InitialDirection
+Illusion,lower,right,1,1,1,right
+Illusion,lower,right,1,1,2,right
+Illusion,lower,left,1,1,3,left
+Illusion,upper,left,1,1,4,right
+Illusion,upper,right,1,1,5,left
+Illusion,upper,left,1,1,6,right
+Illusion,lower,right,1,1,7,right
+Illusion,upper,left,1,1,8,right
+Illusion,upper,right,1,1,9,left
+Illusion,lower,left,1,1,10,left
+Illusion,lower,right,1,1,11,right
+Illusion,lower,left,1,1,12,left
+Illusion,upper,left,1,1,13,right
+Illusion,lower,left,1,1,14,left
+Illusion,upper,right,1,1,15,left
+Illusion,upper,right,1,1,16,left

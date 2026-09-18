@@ -1,0 +1,425 @@
+ID: 99,Subject: PT, Experiment: FIPS, Session: prescan
+Monitor: Scanner
+Distance = 128.7 cm
+, Width = 42.8 cm
+Pixel Width = 1920, Pixel Height = 1080
+Refresh Rate = 60 Hz
+Run 1 started at 2026-08-12 16:32:34
+[2026-08-12 16:32:34.0882] Trial 1 Start 
+[2026-08-12 16:32:42.0894] Trial 1 Switched to Perceptual 
+3.2484 	WARNING 	We strongly recommend you activate the PTB sound engine in PsychoPy prefs as the preferred audio engine. Its timing is vastly superior. Your prefs are currently set to use ['sounddevice', 'PTB', 'pyo', 'pygame'] (in that order).
+9.9544 	WARNING 	Requested an unavailable screen number - using first available.
+11.0375 	EXP 	Created window1 = Window(allowGUI=False, allowStencil=False, autoLog=True, backendConf=UNKNOWN, backgroundFit=<method-wrapper '__getattribute__' of attributeSetter object at 0x7ff3aa63f490>, backgroundImage=<method-wrapper '__getattribute__' of attributeSetter object at 0x7ff3aa63f430>, bitsMode=UNKNOWN, blendMode='avg', bpc=(8, 8, 8), color=array([-1, -1, -1]), colorSpace='rgb', depthBits=8, fullscr=False, gamma=None, gammaErrorPolicy='raise', infoMsg=UNKNOWN, lms=UNKNOWN, monitor=<psychopy.monitors.calibTools.Monitor object at 0x7ff3c8392490>, multiSample=False, name='window1', numSamples=2, pos=(-204, -49), screen=1, size=array([3840, 2160]), stencilBits=0, stereo=False, title='PsychoPy', units='pix', useFBO=False, useRetina=True, viewOri=0.0, viewPos=None, viewScale=None, waitBlanking=True, winType='pyglet')
+11.0376 	EXP 	window1: backgroundImage = None
+11.0376 	EXP 	window1: backgroundFit = 'cover'
+12.1681 	DEPRECATION 	'None' is not a valid color space
+12.1688 	DEPRECATION 	'None' is not a valid color space
+12.1694 	DEPRECATION 	'None' is not a valid color space
+12.1700 	DEPRECATION 	'None' is not a valid color space
+12.1707 	DEPRECATION 	'None' is not a valid color space
+12.1713 	DEPRECATION 	'None' is not a valid color space
+12.1719 	DEPRECATION 	'None' is not a valid color space
+12.1725 	DEPRECATION 	'None' is not a valid color space
+12.1730 	DEPRECATION 	'None' is not a valid color space
+12.1736 	DEPRECATION 	'None' is not a valid color space
+12.1742 	DEPRECATION 	'None' is not a valid color space
+12.1748 	DEPRECATION 	'None' is not a valid color space
+12.1755 	DEPRECATION 	'None' is not a valid color space
+12.1760 	DEPRECATION 	'None' is not a valid color space
+12.1766 	DEPRECATION 	'None' is not a valid color space
+12.1772 	DEPRECATION 	'None' is not a valid color space
+12.1778 	DEPRECATION 	'None' is not a valid color space
+12.1783 	DEPRECATION 	'None' is not a valid color space
+12.1789 	DEPRECATION 	'None' is not a valid color space
+12.1795 	DEPRECATION 	'None' is not a valid color space
+12.1802 	DEPRECATION 	'None' is not a valid color space
+12.1807 	DEPRECATION 	'None' is not a valid color space
+12.1813 	DEPRECATION 	'None' is not a valid color space
+12.1819 	DEPRECATION 	'None' is not a valid color space
+13.4014 	DATA 	Keypress: space
+16.2682 	DATA 	Keypress: 5
+0.0838 	WARNING 	t of last frame was 20.39ms (=1/49)
+0.4036 	WARNING 	t of last frame was 24.98ms (=1/40)
+0.5507 	WARNING 	t of last frame was 21.51ms (=1/46)
+1.0504 	WARNING 	t of last frame was 21.06ms (=1/47)
+1.2133 	WARNING 	Multiple dropped frames have occurred - I'll stop bothering you about them!
+11.9646 	DATA 	Keypress: escape
+11.9663 	DATA 	Keypress: quoteleft
+12.1148 	WARNING 	Stopping key buffers but this could be dangerous ifother keyboards rely on the same.
+ID: 99,Subject: PT, Experiment: FIPS, Session: prescan
+Monitor: Scanner
+Distance = 128.7 cm
+, Width = 42.8 cm
+Pixel Width = 1920, Pixel Height = 1080
+Refresh Rate = 60 Hz
+Run 1 started at 2026-08-12 16:45:30
+[2026-08-12 16:45:30.0345] Trial 1 Start 
+[2026-08-12 16:45:38.0347] Trial 1 Switched to Perceptual 
+4.7274 	WARNING 	We strongly recommend you activate the PTB sound engine in PsychoPy prefs as the preferred audio engine. Its timing is vastly superior. Your prefs are currently set to use ['sounddevice', 'PTB', 'pyo', 'pygame'] (in that order).
+10.2842 	WARNING 	Requested an unavailable screen number - using first available.
+11.0866 	EXP 	Created window1 = Window(allowGUI=False, allowStencil=False, autoLog=True, backendConf=UNKNOWN, backgroundFit=<method-wrapper '__getattribute__' of attributeSetter object at 0x7f9f51cae580>, backgroundImage=<method-wrapper '__getattribute__' of attributeSetter object at 0x7f9f51cae520>, bitsMode=UNKNOWN, blendMode='avg', bpc=(8, 8, 8), color=array([-1, -1, -1]), colorSpace='rgb', depthBits=8, fullscr=False, gamma=None, gammaErrorPolicy='raise', infoMsg=UNKNOWN, lms=UNKNOWN, monitor=<psychopy.monitors.calibTools.Monitor object at 0x7f9f201dc520>, multiSample=False, name='window1', numSamples=2, pos=(-204, -49), screen=1, size=array([3840, 2160]), stencilBits=0, stereo=False, title='PsychoPy', units='pix', useFBO=False, useRetina=True, viewOri=0.0, viewPos=None, viewScale=None, waitBlanking=True, winType='pyglet')
+11.0866 	EXP 	window1: backgroundImage = None
+11.0866 	EXP 	window1: backgroundFit = 'cover'
+12.4657 	DEPRECATION 	'None' is not a valid color space
+12.4665 	DEPRECATION 	'None' is not a valid color space
+12.4670 	DEPRECATION 	'None' is not a valid color space
+12.4676 	DEPRECATION 	'None' is not a valid color space
+12.4683 	DEPRECATION 	'None' is not a valid color space
+12.4691 	DEPRECATION 	'None' is not a valid color space
+12.4700 	DEPRECATION 	'None' is not a valid color space
+12.4707 	DEPRECATION 	'None' is not a valid color space
+12.4714 	DEPRECATION 	'None' is not a valid color space
+12.4721 	DEPRECATION 	'None' is not a valid color space
+12.4728 	DEPRECATION 	'None' is not a valid color space
+12.4734 	DEPRECATION 	'None' is not a valid color space
+12.4741 	DEPRECATION 	'None' is not a valid color space
+12.4749 	DEPRECATION 	'None' is not a valid color space
+12.4757 	DEPRECATION 	'None' is not a valid color space
+12.4765 	DEPRECATION 	'None' is not a valid color space
+14.6146 	DATA 	Keypress: return
+15.8766 	DATA 	Keypress: 5
+0.3427 	WARNING 	t of last frame was 23.88ms (=1/41)
+0.4974 	WARNING 	t of last frame was 28.96ms (=1/34)
+0.5400 	WARNING 	t of last frame was 22.64ms (=1/44)
+0.7088 	WARNING 	t of last frame was 24.08ms (=1/41)
+0.7763 	WARNING 	Multiple dropped frames have occurred - I'll stop bothering you about them!
+9.8986 	DATA 	Keypress: escape
+10.0515 	WARNING 	Stopping key buffers but this could be dangerous ifother keyboards rely on the same.
+ID: 99,Subject: PT, Experiment: FIPS, Session: prescan
+Monitor: Scanner
+Distance = 128.7 cm
+, Width = 42.8 cm
+Pixel Width = 1920, Pixel Height = 1080
+Refresh Rate = 60 Hz
+Run 1 started at 2026-08-12 16:46:48
+[2026-08-12 16:46:48.0907] Trial 1 Start 
+[2026-08-12 16:46:56.0914] Trial 1 Switched to Perceptual 
+3.2375 	WARNING 	We strongly recommend you activate the PTB sound engine in PsychoPy prefs as the preferred audio engine. Its timing is vastly superior. Your prefs are currently set to use ['sounddevice', 'PTB', 'pyo', 'pygame'] (in that order).
+9.7925 	WARNING 	Requested an unavailable screen number - using first available.
+10.4798 	EXP 	Created window1 = Window(allowGUI=False, allowStencil=False, autoLog=True, backendConf=UNKNOWN, backgroundFit=<method-wrapper '__getattribute__' of attributeSetter object at 0x7f85029b73d0>, backgroundImage=<method-wrapper '__getattribute__' of attributeSetter object at 0x7f85029b7370>, bitsMode=UNKNOWN, blendMode='avg', bpc=(8, 8, 8), color=array([-1, -1, -1]), colorSpace='rgb', depthBits=8, fullscr=False, gamma=None, gammaErrorPolicy='raise', infoMsg=UNKNOWN, lms=UNKNOWN, monitor=<psychopy.monitors.calibTools.Monitor object at 0x7f84d1f34370>, multiSample=False, name='window1', numSamples=2, pos=(-204, -49), screen=1, size=array([3840, 2160]), stencilBits=0, stereo=False, title='PsychoPy', units='pix', useFBO=False, useRetina=True, viewOri=0.0, viewPos=None, viewScale=None, waitBlanking=True, winType='pyglet')
+10.4799 	EXP 	window1: backgroundImage = None
+10.4799 	EXP 	window1: backgroundFit = 'cover'
+11.4380 	DEPRECATION 	'None' is not a valid color space
+11.4387 	DEPRECATION 	'None' is not a valid color space
+11.4393 	DEPRECATION 	'None' is not a valid color space
+11.4398 	DEPRECATION 	'None' is not a valid color space
+11.4404 	DEPRECATION 	'None' is not a valid color space
+11.4410 	DEPRECATION 	'None' is not a valid color space
+11.4416 	DEPRECATION 	'None' is not a valid color space
+11.4421 	DEPRECATION 	'None' is not a valid color space
+11.4427 	DEPRECATION 	'None' is not a valid color space
+11.4433 	DEPRECATION 	'None' is not a valid color space
+11.4439 	DEPRECATION 	'None' is not a valid color space
+11.4445 	DEPRECATION 	'None' is not a valid color space
+11.4451 	DEPRECATION 	'None' is not a valid color space
+11.4457 	DEPRECATION 	'None' is not a valid color space
+11.4463 	DEPRECATION 	'None' is not a valid color space
+11.4469 	DEPRECATION 	'None' is not a valid color space
+13.0006 	DATA 	Keypress: space
+14.2069 	DATA 	Keypress: 5
+0.0388 	WARNING 	t of last frame was 20.58ms (=1/48)
+0.4233 	WARNING 	t of last frame was 24.85ms (=1/40)
+0.4571 	WARNING 	t of last frame was 25.26ms (=1/39)
+0.5210 	WARNING 	t of last frame was 22.68ms (=1/44)
+0.6067 	WARNING 	Multiple dropped frames have occurred - I'll stop bothering you about them!
+2.4769 	DATA 	Keypress: lcommand
+2.4915 	DATA 	Keypress: lshift
+6.4772 	DATA 	Keypress: lcommand
+6.4775 	DATA 	Keypress: lshift
+7.6088 	DATA 	Keypress: lshift
+7.6096 	DATA 	Keypress: lcommand
+10.3202 	DATA 	Keypress: escape
+10.4702 	WARNING 	Stopping key buffers but this could be dangerous ifother keyboards rely on the same.
+ID: 99,Subject: PT, Experiment: FIPS, Session: prescan
+Monitor: Scanner
+Distance = 128.7 cm
+, Width = 42.8 cm
+Pixel Width = 1920, Pixel Height = 1080
+Refresh Rate = 60 Hz
+Run 1 started at 2026-08-12 16:49:46
+[2026-08-12 16:49:46.0370] Trial 1 Start 
+[2026-08-12 16:49:46.0390] Trial 1 Response Saved 
+[2026-08-12 16:49:46.0608] Trial 1 Stimulus Off 
+[2026-08-12 16:49:46.0608] Trial 1 Trial End 
+Trial Duration: 0.239 seconds
+[2026-08-12 16:49:46.0611] Trial 2 Start 
+[2026-08-12 16:49:54.0631] Trial 2 Switched to Perceptual 
+[2026-08-12 16:50:02.0613] Trial 2 Switched to Illusion 
+[2026-08-12 16:50:10.0616] Trial 2 Switched to Perceptual 
+3.2142 	WARNING 	We strongly recommend you activate the PTB sound engine in PsychoPy prefs as the preferred audio engine. Its timing is vastly superior. Your prefs are currently set to use ['sounddevice', 'PTB', 'pyo', 'pygame'] (in that order).
+8.6374 	WARNING 	Requested an unavailable screen number - using first available.
+9.3470 	EXP 	Created window1 = Window(allowGUI=False, allowStencil=False, autoLog=True, backendConf=UNKNOWN, backgroundFit=<method-wrapper '__getattribute__' of attributeSetter object at 0x7f8a624874f0>, backgroundImage=<method-wrapper '__getattribute__' of attributeSetter object at 0x7f8a62487490>, bitsMode=UNKNOWN, blendMode='avg', bpc=(8, 8, 8), color=array([-1, -1, -1]), colorSpace='rgb', depthBits=8, fullscr=False, gamma=None, gammaErrorPolicy='raise', infoMsg=UNKNOWN, lms=UNKNOWN, monitor=<psychopy.monitors.calibTools.Monitor object at 0x7f8a62adc490>, multiSample=False, name='window1', numSamples=2, pos=(-204, -49), screen=1, size=array([3840, 2160]), stencilBits=0, stereo=False, title='PsychoPy', units='pix', useFBO=False, useRetina=True, viewOri=0.0, viewPos=None, viewScale=None, waitBlanking=True, winType='pyglet')
+9.3471 	EXP 	window1: backgroundImage = None
+9.3471 	EXP 	window1: backgroundFit = 'cover'
+10.2587 	DEPRECATION 	'None' is not a valid color space
+10.2594 	DEPRECATION 	'None' is not a valid color space
+10.2600 	DEPRECATION 	'None' is not a valid color space
+10.2607 	DEPRECATION 	'None' is not a valid color space
+10.2613 	DEPRECATION 	'None' is not a valid color space
+10.2619 	DEPRECATION 	'None' is not a valid color space
+10.2625 	DEPRECATION 	'None' is not a valid color space
+10.2631 	DEPRECATION 	'None' is not a valid color space
+10.2637 	DEPRECATION 	'None' is not a valid color space
+10.2643 	DEPRECATION 	'None' is not a valid color space
+10.2648 	DEPRECATION 	'None' is not a valid color space
+10.2654 	DEPRECATION 	'None' is not a valid color space
+10.2660 	DEPRECATION 	'None' is not a valid color space
+10.2665 	DEPRECATION 	'None' is not a valid color space
+10.2672 	DEPRECATION 	'None' is not a valid color space
+10.2678 	DEPRECATION 	'None' is not a valid color space
+11.7168 	DATA 	Keypress: space
+11.9615 	DATA 	Keypress: space
+13.2048 	DATA 	Keypress: 5
+0.2820 	WARNING 	t of last frame was 21.03ms (=1/47)
+0.3067 	WARNING 	t of last frame was 20.36ms (=1/49)
+0.5392 	WARNING 	t of last frame was 31.48ms (=1/31)
+0.6252 	WARNING 	t of last frame was 22.59ms (=1/44)
+0.6718 	WARNING 	Multiple dropped frames have occurred - I'll stop bothering you about them!
+28.4102 	DATA 	Keypress: escape
+28.5632 	WARNING 	Stopping key buffers but this could be dangerous ifother keyboards rely on the same.
+ID: 99,Subject: PT, Experiment: FIPS, Session: prescan
+Monitor: Scanner
+Distance = 128.7 cm
+, Width = 42.8 cm
+Pixel Width = 1920, Pixel Height = 1080
+Refresh Rate = 60 Hz
+Run 1 started at 2026-08-12 16:52:46
+[2026-08-12 16:52:46.0854] Trial 1 Start 
+[2026-08-12 16:52:54.0864] Trial 1 Switched to Perceptual 
+3.2736 	WARNING 	We strongly recommend you activate the PTB sound engine in PsychoPy prefs as the preferred audio engine. Its timing is vastly superior. Your prefs are currently set to use ['sounddevice', 'PTB', 'pyo', 'pygame'] (in that order).
+8.1650 	WARNING 	Requested an unavailable screen number - using first available.
+8.8563 	EXP 	Created window1 = Window(allowGUI=False, allowStencil=False, autoLog=True, backendConf=UNKNOWN, backgroundFit=<method-wrapper '__getattribute__' of attributeSetter object at 0x7fc19899a2b0>, backgroundImage=<method-wrapper '__getattribute__' of attributeSetter object at 0x7fc19899a250>, bitsMode=UNKNOWN, blendMode='avg', bpc=(8, 8, 8), color=array([-1, -1, -1]), colorSpace='rgb', depthBits=8, fullscr=False, gamma=None, gammaErrorPolicy='raise', infoMsg=UNKNOWN, lms=UNKNOWN, monitor=<psychopy.monitors.calibTools.Monitor object at 0x7fc198cf6280>, multiSample=False, name='window1', numSamples=2, pos=(-204, -49), screen=1, size=array([3840, 2160]), stencilBits=0, stereo=False, title='PsychoPy', units='pix', useFBO=False, useRetina=True, viewOri=0.0, viewPos=None, viewScale=None, waitBlanking=True, winType='pyglet')
+8.8564 	EXP 	window1: backgroundImage = None
+8.8564 	EXP 	window1: backgroundFit = 'cover'
+9.7169 	DEPRECATION 	'None' is not a valid color space
+9.7176 	DEPRECATION 	'None' is not a valid color space
+9.7183 	DEPRECATION 	'None' is not a valid color space
+9.7189 	DEPRECATION 	'None' is not a valid color space
+9.7195 	DEPRECATION 	'None' is not a valid color space
+9.7201 	DEPRECATION 	'None' is not a valid color space
+9.7207 	DEPRECATION 	'None' is not a valid color space
+9.7212 	DEPRECATION 	'None' is not a valid color space
+9.7218 	DEPRECATION 	'None' is not a valid color space
+9.7224 	DEPRECATION 	'None' is not a valid color space
+9.7230 	DEPRECATION 	'None' is not a valid color space
+9.7235 	DEPRECATION 	'None' is not a valid color space
+9.7241 	DEPRECATION 	'None' is not a valid color space
+9.7247 	DEPRECATION 	'None' is not a valid color space
+9.7254 	DEPRECATION 	'None' is not a valid color space
+9.7259 	DEPRECATION 	'None' is not a valid color space
+10.5614 	DATA 	Keypress: space
+11.9785 	DATA 	Keypress: 5
+0.0426 	WARNING 	t of last frame was 20.50ms (=1/48)
+0.3275 	WARNING 	t of last frame was 21.55ms (=1/46)
+0.4442 	WARNING 	t of last frame was 19.72ms (=1/50)
+0.5258 	WARNING 	t of last frame was 20.56ms (=1/48)
+0.6119 	WARNING 	Multiple dropped frames have occurred - I'll stop bothering you about them!
+11.1959 	DATA 	Keypress: escape
+11.3494 	WARNING 	Stopping key buffers but this could be dangerous ifother keyboards rely on the same.
+ID: 99,Subject: PT, Experiment: FIPS, Session: prescan
+Monitor: Scanner
+Distance = 128.7 cm
+, Width = 42.8 cm
+Pixel Width = 1920, Pixel Height = 1080
+Refresh Rate = 60 Hz
+Run 1 started at 2026-08-12 16:53:48
+[2026-08-12 16:53:48.0679] Trial 1 Start 
+[2026-08-12 16:53:48.0683] Trial 1 Response Saved 
+[2026-08-12 16:53:48.0909] Trial 1 Stimulus Off 
+[2026-08-12 16:53:48.0910] Trial 1 Trial End 
+Trial Duration: 0.231 seconds
+[2026-08-12 16:53:48.0912] Trial 2 Start 
+[2026-08-12 16:53:56.0914] Trial 2 Switched to Perceptual 
+[2026-08-12 16:54:04.0915] Trial 2 Switched to Illusion 
+[2026-08-12 16:54:12.0914] Trial 2 Switched to Perceptual 
+2.9756 	WARNING 	We strongly recommend you activate the PTB sound engine in PsychoPy prefs as the preferred audio engine. Its timing is vastly superior. Your prefs are currently set to use ['sounddevice', 'PTB', 'pyo', 'pygame'] (in that order).
+16.4196 	WARNING 	Requested an unavailable screen number - using first available.
+17.0952 	EXP 	Created window1 = Window(allowGUI=False, allowStencil=False, autoLog=True, backendConf=UNKNOWN, backgroundFit=<method-wrapper '__getattribute__' of attributeSetter object at 0x7fe309c87580>, backgroundImage=<method-wrapper '__getattribute__' of attributeSetter object at 0x7fe309c87520>, bitsMode=UNKNOWN, blendMode='avg', bpc=(8, 8, 8), color=array([-1, -1, -1]), colorSpace='rgb', depthBits=8, fullscr=False, gamma=None, gammaErrorPolicy='raise', infoMsg=UNKNOWN, lms=UNKNOWN, monitor=<psychopy.monitors.calibTools.Monitor object at 0x7fe2fa73d550>, multiSample=False, name='window1', numSamples=2, pos=(-204, -49), screen=1, size=array([3840, 2160]), stencilBits=0, stereo=False, title='PsychoPy', units='pix', useFBO=False, useRetina=True, viewOri=0.0, viewPos=None, viewScale=None, waitBlanking=True, winType='pyglet')
+17.0953 	EXP 	window1: backgroundImage = None
+17.0953 	EXP 	window1: backgroundFit = 'cover'
+17.9526 	DEPRECATION 	'None' is not a valid color space
+17.9533 	DEPRECATION 	'None' is not a valid color space
+17.9540 	DEPRECATION 	'None' is not a valid color space
+17.9546 	DEPRECATION 	'None' is not a valid color space
+17.9552 	DEPRECATION 	'None' is not a valid color space
+17.9558 	DEPRECATION 	'None' is not a valid color space
+17.9564 	DEPRECATION 	'None' is not a valid color space
+17.9570 	DEPRECATION 	'None' is not a valid color space
+17.9575 	DEPRECATION 	'None' is not a valid color space
+17.9581 	DEPRECATION 	'None' is not a valid color space
+17.9587 	DEPRECATION 	'None' is not a valid color space
+17.9592 	DEPRECATION 	'None' is not a valid color space
+17.9598 	DEPRECATION 	'None' is not a valid color space
+17.9604 	DEPRECATION 	'None' is not a valid color space
+17.9610 	DEPRECATION 	'None' is not a valid color space
+17.9616 	DEPRECATION 	'None' is not a valid color space
+19.4289 	DATA 	Keypress: space
+19.6128 	DATA 	Keypress: space
+21.2097 	DATA 	Keypress: 5
+0.5693 	WARNING 	t of last frame was 20.10ms (=1/49)
+0.6694 	WARNING 	t of last frame was 20.90ms (=1/47)
+0.7180 	WARNING 	t of last frame was 20.12ms (=1/49)
+0.8700 	WARNING 	t of last frame was 20.02ms (=1/49)
+0.9531 	WARNING 	Multiple dropped frames have occurred - I'll stop bothering you about them!
+24.4606 	DATA 	Keypress: escape
+24.6073 	WARNING 	Stopping key buffers but this could be dangerous ifother keyboards rely on the same.
+ID: 99,Subject: PT, Experiment: FIPS, Session: prescan
+Monitor: Scanner
+Distance = 128.7 cm
+, Width = 42.8 cm
+Pixel Width = 1920, Pixel Height = 1080
+Refresh Rate = 60 Hz
+Run 1 started at 2026-08-12 16:54:40
+[2026-08-12 16:54:40.0620] Trial 1 Start 
+[2026-08-12 16:54:48.0631] Trial 1 Switched to Perceptual 
+3.2043 	WARNING 	We strongly recommend you activate the PTB sound engine in PsychoPy prefs as the preferred audio engine. Its timing is vastly superior. Your prefs are currently set to use ['sounddevice', 'PTB', 'pyo', 'pygame'] (in that order).
+8.5306 	WARNING 	Requested an unavailable screen number - using first available.
+9.2214 	EXP 	Created window1 = Window(allowGUI=False, allowStencil=False, autoLog=True, backendConf=UNKNOWN, backgroundFit=<method-wrapper '__getattribute__' of attributeSetter object at 0x7f834a9c7520>, backgroundImage=<method-wrapper '__getattribute__' of attributeSetter object at 0x7f834a9c74c0>, bitsMode=UNKNOWN, blendMode='avg', bpc=(8, 8, 8), color=array([-1, -1, -1]), colorSpace='rgb', depthBits=8, fullscr=False, gamma=None, gammaErrorPolicy='raise', infoMsg=UNKNOWN, lms=UNKNOWN, monitor=<psychopy.monitors.calibTools.Monitor object at 0x7f834ad254f0>, multiSample=False, name='window1', numSamples=2, pos=(-204, -49), screen=1, size=array([3840, 2160]), stencilBits=0, stereo=False, title='PsychoPy', units='pix', useFBO=False, useRetina=True, viewOri=0.0, viewPos=None, viewScale=None, waitBlanking=True, winType='pyglet')
+9.2215 	EXP 	window1: backgroundImage = None
+9.2215 	EXP 	window1: backgroundFit = 'cover'
+10.0892 	DEPRECATION 	'None' is not a valid color space
+10.0898 	DEPRECATION 	'None' is not a valid color space
+10.0904 	DEPRECATION 	'None' is not a valid color space
+10.0909 	DEPRECATION 	'None' is not a valid color space
+10.0915 	DEPRECATION 	'None' is not a valid color space
+10.0921 	DEPRECATION 	'None' is not a valid color space
+10.0927 	DEPRECATION 	'None' is not a valid color space
+10.0933 	DEPRECATION 	'None' is not a valid color space
+10.0939 	DEPRECATION 	'None' is not a valid color space
+10.0944 	DEPRECATION 	'None' is not a valid color space
+10.0950 	DEPRECATION 	'None' is not a valid color space
+10.0956 	DEPRECATION 	'None' is not a valid color space
+10.0961 	DEPRECATION 	'None' is not a valid color space
+10.0967 	DEPRECATION 	'None' is not a valid color space
+10.0974 	DEPRECATION 	'None' is not a valid color space
+10.0979 	DEPRECATION 	'None' is not a valid color space
+11.5114 	DATA 	Keypress: space
+14.7284 	DATA 	Keypress: 5
+0.0746 	WARNING 	t of last frame was 23.55ms (=1/42)
+0.3757 	WARNING 	t of last frame was 20.43ms (=1/48)
+0.5077 	WARNING 	t of last frame was 19.71ms (=1/50)
+0.6156 	WARNING 	t of last frame was 23.62ms (=1/42)
+0.6799 	WARNING 	Multiple dropped frames have occurred - I'll stop bothering you about them!
+12.7330 	DATA 	Keypress: escape
+12.8833 	WARNING 	Stopping key buffers but this could be dangerous ifother keyboards rely on the same.
+ID: 99,Subject: PT, Experiment: FIPS, Session: prescan
+Monitor: Scanner
+Distance = 128.7 cm
+, Width = 42.8 cm
+Pixel Width = 1920, Pixel Height = 1080
+Refresh Rate = 60 Hz
+Run 1 started at 2026-08-12 16:55:32
+[2026-08-12 16:55:32.0127] Trial 1 Start 
+[2026-08-12 16:55:40.0131] Trial 1 Switched to Perceptual 
+3.0754 	WARNING 	We strongly recommend you activate the PTB sound engine in PsychoPy prefs as the preferred audio engine. Its timing is vastly superior. Your prefs are currently set to use ['sounddevice', 'PTB', 'pyo', 'pygame'] (in that order).
+26.9169 	WARNING 	Requested an unavailable screen number - using first available.
+27.6246 	EXP 	Created window1 = Window(allowGUI=False, allowStencil=False, autoLog=True, backendConf=UNKNOWN, backgroundFit=<method-wrapper '__getattribute__' of attributeSetter object at 0x7f8e1180d520>, backgroundImage=<method-wrapper '__getattribute__' of attributeSetter object at 0x7f8e1180d4c0>, bitsMode=UNKNOWN, blendMode='avg', bpc=(8, 8, 8), color=array([-1, -1, -1]), colorSpace='rgb', depthBits=8, fullscr=False, gamma=None, gammaErrorPolicy='raise', infoMsg=UNKNOWN, lms=UNKNOWN, monitor=<psychopy.monitors.calibTools.Monitor object at 0x7f8e122354f0>, multiSample=False, name='window1', numSamples=2, pos=(-204, -49), screen=1, size=array([3840, 2160]), stencilBits=0, stereo=False, title='PsychoPy', units='pix', useFBO=False, useRetina=True, viewOri=0.0, viewPos=None, viewScale=None, waitBlanking=True, winType='pyglet')
+27.6247 	EXP 	window1: backgroundImage = None
+27.6247 	EXP 	window1: backgroundFit = 'cover'
+28.4924 	DEPRECATION 	'None' is not a valid color space
+28.4931 	DEPRECATION 	'None' is not a valid color space
+28.4937 	DEPRECATION 	'None' is not a valid color space
+28.4942 	DEPRECATION 	'None' is not a valid color space
+28.4948 	DEPRECATION 	'None' is not a valid color space
+28.4953 	DEPRECATION 	'None' is not a valid color space
+28.4959 	DEPRECATION 	'None' is not a valid color space
+28.4965 	DEPRECATION 	'None' is not a valid color space
+28.4970 	DEPRECATION 	'None' is not a valid color space
+28.4976 	DEPRECATION 	'None' is not a valid color space
+28.4982 	DEPRECATION 	'None' is not a valid color space
+28.4988 	DEPRECATION 	'None' is not a valid color space
+28.4994 	DEPRECATION 	'None' is not a valid color space
+28.5000 	DEPRECATION 	'None' is not a valid color space
+28.5006 	DEPRECATION 	'None' is not a valid color space
+28.5012 	DEPRECATION 	'None' is not a valid color space
+29.2220 	DATA 	Keypress: space
+30.9376 	DATA 	Keypress: 5
+0.2730 	WARNING 	t of last frame was 21.01ms (=1/47)
+0.3037 	WARNING 	t of last frame was 23.64ms (=1/42)
+0.3382 	WARNING 	t of last frame was 25.28ms (=1/39)
+0.4123 	WARNING 	t of last frame was 32.21ms (=1/31)
+0.4375 	WARNING 	Multiple dropped frames have occurred - I'll stop bothering you about them!
+11.0554 	DATA 	Keypress: escape
+11.1982 	WARNING 	Stopping key buffers but this could be dangerous ifother keyboards rely on the same.
+ID: 99,Subject: PT, Experiment: FIPS, Session: prescan
+Monitor: Scanner
+Distance = 128.7 cm
+, Width = 42.8 cm
+Pixel Width = 1920, Pixel Height = 1080
+Refresh Rate = 60 Hz
+Run 1 started at 2026-09-18 13:02:23
+[2026-09-18 13:02:23.0518] Trial 1 Start 
+[2026-09-18 13:02:31.0522] Trial 1 Switched to Perceptual 
+[2026-09-18 13:02:39.0521] Trial 1 Switched to Illusion 
+[2026-09-18 13:02:47.0521] Trial 1 Switched to Perceptual 
+5.2345 	WARNING 	We strongly recommend you activate the PTB sound engine in PsychoPy prefs as the preferred audio engine. Its timing is vastly superior. Your prefs are currently set to use ['sounddevice', 'PTB', 'pyo', 'pygame'] (in that order).
+24.8993 	WARNING 	Requested an unavailable screen number - using first available.
+26.1204 	EXP 	Created window1 = Window(allowGUI=False, allowStencil=False, autoLog=True, backendConf=UNKNOWN, backgroundFit=<method-wrapper '__getattribute__' of attributeSetter object at 0x7fbf197e6400>, backgroundImage=<method-wrapper '__getattribute__' of attributeSetter object at 0x7fbf197e63a0>, bitsMode=UNKNOWN, blendMode='avg', bpc=(8, 8, 8), color=array([-1, -1, -1]), colorSpace='rgb', depthBits=8, fullscr=False, gamma=None, gammaErrorPolicy='raise', infoMsg=UNKNOWN, lms=UNKNOWN, monitor=<psychopy.monitors.calibTools.Monitor object at 0x7fbf102c53d0>, multiSample=False, name='window1', numSamples=2, pos=(-204, -49), screen=1, size=array([3840, 2160]), stencilBits=0, stereo=False, title='PsychoPy', units='pix', useFBO=False, useRetina=True, viewOri=0.0, viewPos=None, viewScale=None, waitBlanking=True, winType='pyglet')
+26.1205 	EXP 	window1: backgroundImage = None
+26.1205 	EXP 	window1: backgroundFit = 'cover'
+27.1410 	DEPRECATION 	'None' is not a valid color space
+27.1418 	DEPRECATION 	'None' is not a valid color space
+27.1424 	DEPRECATION 	'None' is not a valid color space
+27.1430 	DEPRECATION 	'None' is not a valid color space
+27.1435 	DEPRECATION 	'None' is not a valid color space
+27.1441 	DEPRECATION 	'None' is not a valid color space
+27.1447 	DEPRECATION 	'None' is not a valid color space
+27.1453 	DEPRECATION 	'None' is not a valid color space
+27.1459 	DEPRECATION 	'None' is not a valid color space
+27.1465 	DEPRECATION 	'None' is not a valid color space
+27.1471 	DEPRECATION 	'None' is not a valid color space
+27.1477 	DEPRECATION 	'None' is not a valid color space
+27.1482 	DEPRECATION 	'None' is not a valid color space
+27.1488 	DEPRECATION 	'None' is not a valid color space
+27.1495 	DEPRECATION 	'None' is not a valid color space
+27.1501 	DEPRECATION 	'None' is not a valid color space
+29.0759 	DATA 	Keypress: space
+32.6546 	DATA 	Keypress: 5
+0.1112 	WARNING 	t of last frame was 22.49ms (=1/44)
+0.7141 	WARNING 	t of last frame was 21.28ms (=1/46)
+0.9159 	WARNING 	t of last frame was 19.88ms (=1/50)
+0.9516 	WARNING 	t of last frame was 20.94ms (=1/47)
+0.9826 	WARNING 	Multiple dropped frames have occurred - I'll stop bothering you about them!
+8.9715 	DATA 	Keypress: 1
+9.2950 	DATA 	Keypress: 2
+9.5108 	DATA 	Keypress: 2
+9.7758 	DATA 	Keypress: 1
+9.9184 	DATA 	Keypress: 1
+10.0918 	DATA 	Keypress: 1
+10.2521 	DATA 	Keypress: 1
+10.4422 	DATA 	Keypress: 1
+10.6010 	DATA 	Keypress: 1
+10.9278 	DATA 	Keypress: 2
+11.0843 	DATA 	Keypress: 2
+11.2516 	DATA 	Keypress: 2
+11.5670 	DATA 	Keypress: 2
+11.7846 	DATA 	Keypress: 1
+11.9233 	DATA 	Keypress: 1
+12.0842 	DATA 	Keypress: 1
+12.9623 	DATA 	Keypress: 1
+13.1232 	DATA 	Keypress: 1
+13.3100 	DATA 	Keypress: 1
+13.5078 	DATA 	Keypress: 1
+13.6766 	DATA 	Keypress: 1
+13.8673 	DATA 	Keypress: 1
+14.0493 	DATA 	Keypress: 1
+14.3734 	DATA 	Keypress: 1
+14.5393 	DATA 	Keypress: 1
+15.0558 	DATA 	Keypress: 2
+15.2418 	DATA 	Keypress: 2
+15.4271 	DATA 	Keypress: 2
+16.2335 	DATA 	Keypress: 1
+24.7239 	DATA 	Keypress: 2
+25.6002 	DATA 	Keypress: 2
+25.7852 	DATA 	Keypress: 2
+25.9656 	DATA 	Keypress: 2
+26.1613 	DATA 	Keypress: 2
+26.3898 	DATA 	Keypress: 1
+26.5482 	DATA 	Keypress: 1
+26.7237 	DATA 	Keypress: 1
+26.9016 	DATA 	Keypress: 1
+27.0930 	DATA 	Keypress: 1
+27.2783 	DATA 	Keypress: 1
+27.4918 	DATA 	Keypress: 1
+30.8901 	DATA 	Keypress: escape
+31.0450 	WARNING 	Stopping key buffers but this could be dangerous ifother keyboards rely on the same.

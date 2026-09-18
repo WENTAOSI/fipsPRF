@@ -1,0 +1,3 @@
+ExpCondition,InitialPosition,InducedPercept,Block,Run,Trial,InitialDirection,resp_ans_1,resp_cont_1,resp_RT_1,resp_cor_1
+Illusion,lower,right,1,4,1,right,,,,
+Physical,lower,none,1,4,2,NA,inc,inc,6.424896800002898,True

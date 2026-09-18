@@ -1,0 +1,5 @@
+ExpCondition,InitialPosition,InducedPercept,Block,Run,Trial,InitialDirection
+Illusion,lower,right,1,4,1,right
+Physical,lower,none,1,4,2,NA
+Perceptual,lower,left,1,4,3,NA
+Illusion,lower,left,1,4,4,left

@@ -1,0 +1,5 @@
+ExpCondition,InitialPosition,InducedPercept,Block,Run,Trial,InitialDirection,resp_ans_1,resp_cont_1,resp_RT_1,resp_cor_1,resp_cont_0,resp_RT_0,resp_ans_2
+Perceptual,upper,left,1,5,1,NA,inc,inc,7.679467800000566,True,,,
+Physical,lower,none,1,5,2,NA,inc,inc,2.4586249999993015,True,dec,1.304967800002487,dec
+Illusion,upper,left,1,5,3,right,dec,dec,7.7498703000019304,True,inc,0.010696600002120249,
+Physical,upper,none,1,5,4,NA,inc,,,,inc,0.0200334000037401,

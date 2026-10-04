@@ -93,9 +93,9 @@ MONITORS = {
         "screen": 0,
     },
     "Scanner": {
-        "mon_dist": 113.7,
-        "size_cm": (47.5, 29.7),
-        "size_px": (1280, 800),
+        "mon_dist": 113.7,        # cm, in-bore viewing distance
+        "size_cm": (47.5, 29.7), # measured projected image
+        "size_px": (1024, 768),   # actual scanner display mode
         "refresh_rate": 60,
         "screen": 0,
     },

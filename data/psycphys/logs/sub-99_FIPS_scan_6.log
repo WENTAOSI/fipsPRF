@@ -1,0 +1,21 @@
+ID: 99, Subject: PT, Experiment: FIPS, Session: scan, Run: 6
+Actual display pixels = (np.int64(1024), np.int64(768))
+Monitor: Scanner
+Distance = 113.7 cm, Width = 35.4 cm
+Pixel Width = 1024, Pixel Height = 768
+Refresh Rate = 60 Hz
+pRF render scale = 1.0; canvas = None
+Run 6 started at 2026-10-04 12:05:35
+Pre-run fixation baseline = 15.000 s
+9.4903 	EXP 	Created window1 = Window(allowGUI=False, allowStencil=False, autoLog=True, backendConf=UNKNOWN, backgroundFit=<method-wrapper '__getattribute__' of attributeSetter object at 0x0000014E7FD47550>, backgroundImage=<method-wrapper '__getattribute__' of attributeSetter object at 0x0000014E7FD46320>, bitsMode=UNKNOWN, blendMode='avg', bpc=(8, 8, 8), color=array([-1, -1, -1]), colorSpace='rgb', depthBits=8, fullscr=True, gamma=None, gammaErrorPolicy='raise', infoMsg=UNKNOWN, lms=UNKNOWN, monitor=<psychopy.monitors.calibTools.Monitor object at 0x0000014E083E8EE0>, multiSample=False, name='window1', numSamples=2, pos=(0, 0), screen=0, size=array([1024,  768]), stencilBits=0, stereo=False, title='PsychoPy', units='pix', useFBO=False, useRetina=False, viewOri=0.0, viewPos=None, viewScale=None, waitBlanking=True, winType='pyglet')
+9.4904 	EXP 	window1: backgroundImage = None
+9.4904 	EXP 	window1: backgroundFit = 'cover'
+12.0614 	DATA 	Mouse: Left button down, pos=(512,384)
+12.2135 	DATA 	Mouse:  Left button up, pos=(512,384)
+12.3937 	DATA 	Mouse: Left button down, pos=(512,384)
+12.5258 	DATA 	Mouse:  Left button up, pos=(512,384)
+20.3165 	DATA 	Keypress: 5
+22.0533 	DATA 	Keypress: d
+22.3686 	DATA 	Keypress: d
+24.1259 	DATA 	Keypress: 5
+0.6562 	DATA 	Keypress: escape

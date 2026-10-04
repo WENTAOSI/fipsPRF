@@ -1,0 +1,5 @@
+ExpCondition,InitialPosition,InducedPercept,InitialDirection,Block,Run,Trial,scheduled_onset_run_s,scheduled_offset_run_s,stim_onset_run_s,stim_offset_run_s
+Veridical,lower,none,NA,1,2,1,15.0,23.0,15.026958899921738,23.043294199975207
+FrameOnly,NA,none,left,1,2,2,29.0,37.0,29.019090999965556,37.033774100011215
+Perceptual,upper,left,NA,1,2,3,43.0,51.0,43.029481199919246,51.04236530000344
+Veridical,upper,none,NA,1,2,4,57.0,65.0,57.02103039994836,65.03564499993809

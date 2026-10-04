@@ -58,67 +58,20 @@ import pylink
 from EyeLinkCoreGraphicsPsychoPy import EyeLinkCoreGraphicsPsychoPy
 
 import fips_config as cfg
-import atexit
-import pyglet
 from pyglet import gl
 
 
-def select_display_mode(screen_index, size_px, refresh_hz):
-    """Request the same real display mode used by MATLAB pton/SetResolution."""
-    screens = pyglet.canvas.get_display().get_screens()
-    if not 0 <= screen_index < len(screens):
-        raise ValueError(f"Display index {screen_index} is unavailable")
-    screen = screens[screen_index]
-    width, height = map(int, size_px)
-    matches = [mode for mode in screen.get_modes()
-               if (mode.width, mode.height, mode.rate) ==
-               (width, height, refresh_hz)]
-    if not matches:
-        logging.warning("Requested pRF display mode unavailable; using scaled 4:3 fallback")
-        return None
-    mode = max(matches, key=lambda item: item.depth)
-    screen.set_mode(mode)
-    actual = screen.get_mode()
-    if (actual.width, actual.height, actual.rate) != (width, height, refresh_hz):
-        screen.restore_mode()
-        logging.warning("Windows refused pRF display mode; using scaled 4:3 fallback")
-        return None
-    return screen
+class LetterboxWindow(visual.Window):
+    """Constrain the experiment canvas inside a native fullscreen window."""
 
-
-class PRFMatchedWindow(visual.Window):
-    """Use a real fullscreen display mode and restore it when closing."""
-
-    def __init__(self, *args, match_display_mode=False, refresh_hz=60, **kwargs):
-        self._closed = True
-        self._matched_screen = None
-        self.letterbox_rect = None
-        self.render_scale = 1.0
-        if match_display_mode:
-            self._matched_screen = select_display_mode(
-                kwargs.get("screen", 0), kwargs["size"], refresh_hz
-            )
-            atexit.register(self.restore_display_mode)
-        try:
-            super().__init__(*args, **kwargs)
-            if match_display_mode:
-                actual_w, actual_h = map(int, self.frameBufferSize)
-                target_w, target_h = kwargs["size"]
-                self.render_scale = min(actual_w / target_w, actual_h / target_h)
-                if (actual_w, actual_h) != (target_w, target_h):
-                    canvas_w = round(target_w * self.render_scale)
-                    canvas_h = round(target_h * self.render_scale)
-                    self.letterbox_rect = ((actual_w-canvas_w)//2,
-                                          (actual_h-canvas_h)//2,
-                                          canvas_w, canvas_h)
-                    self._endOfFlip(True)
-        except BaseException:
-            self.restore_display_mode()
-            raise
+    letterbox_rect = None
+    letterbox_enabled = False
 
     def _endOfFlip(self, clearBuffer):
-        if self.letterbox_rect is not None:
+        if self.letterbox_enabled and self.letterbox_rect is not None:
             if clearBuffer:
+                # Clear the whole back buffer black, then clear only the
+                # experiment rectangle with the current background color.
                 self.scissorTest = False
                 gl.glClearColor(0.0, 0.0, 0.0, 1.0)
                 gl.glClear(gl.GL_COLOR_BUFFER_BIT)
@@ -127,16 +80,11 @@ class PRFMatchedWindow(visual.Window):
             self.scissorTest = True
         super()._endOfFlip(clearBuffer)
 
-    def restore_display_mode(self):
-        if self._matched_screen is not None:
-            screen, self._matched_screen = self._matched_screen, None
-            screen.restore_mode()
-
-    def close(self):
-        try:
-            super().close()
-        finally:
-            self.restore_display_mode()
+    def set_letterbox_enabled(self, enabled):
+        self.letterbox_enabled = enabled and self.letterbox_rect is not None
+        if not self.letterbox_enabled:
+            self.resetViewport()
+        self._endOfFlip(True)
 
 
 CODE_TEST = cfg.CODE_TEST
@@ -393,9 +341,7 @@ expMon = monitors.Monitor(
 expMon.setSizePix(monInfo["size_px"])
 expMon.save()
 
-expWin = PRFMatchedWindow(
-    match_display_mode=(cfg.FULLSCREEN and cfg.MATCH_PRF_DISPLAY_MODE and monName == "Scanner"),
-    refresh_hz=monInfo["refresh_rate"],
+expWin = LetterboxWindow(
     monitor=expMon,
     size=monInfo["size_px"],
     screen=monInfo["screen"],
@@ -410,7 +356,30 @@ expWin = PRFMatchedWindow(
     waitBlanking=True,
 )
 
-logFile.write(f"Actual display pixels = {tuple(expWin.frameBufferSize)}\n")
+if cfg.FULLSCREEN and getattr(cfg, "LETTERBOX_FULLSCREEN", True):
+    desktop_w, desktop_h = map(int, expWin.frameBufferSize)
+    canvas_mode = getattr(cfg, "CANVAS_MODE", "profile_pixels")
+    if canvas_mode == "square_fit_height":
+        target_w = target_h = min(desktop_w, desktop_h)
+    elif canvas_mode == "profile_pixels":
+        target_w, target_h = map(int, monInfo["size_px"])
+    else:
+        expWin.close()
+        raise ValueError(f"Unknown CANVAS_MODE: {canvas_mode}")
+    if target_w > desktop_w or target_h > desktop_h:
+        expWin.close()
+        raise ValueError(
+            f"Profile size {target_w}x{target_h} exceeds display "
+            f"{desktop_w}x{desktop_h}; select a smaller monitor profile."
+        )
+    expWin.letterbox_rect = (
+        (desktop_w - target_w) // 2,
+        (desktop_h - target_h) // 2,
+        target_w,
+        target_h,
+    )
+    expWin.set_letterbox_enabled(True)
+    logFile.write(f"Centered experiment rectangle = {expWin.letterbox_rect}\n")
 
 logFile.write(f"Monitor: {monName}\n")
 logFile.write(
@@ -428,12 +397,8 @@ screen_width_px = monInfo["size_px"][0]
 viewing_distance_cm = monInfo["mon_dist"]
 
 px_per_cm = screen_width_px / screen_width_cm
-# Exact conversion used by the local pRF runretinotopy.m.
-cm_per_dva = viewing_distance_cm * 0.017455
-# Scale the entire logical 1024x768 image only when the native mode failed.
-render_scale = expWin.render_scale
-ppd = cm_per_dva * px_per_cm * render_scale
-logFile.write(f"pRF render scale = {render_scale}; canvas = {expWin.letterbox_rect}\n")
+cm_per_dva = 2 * viewing_distance_cm * np.tan(np.radians(1) / 2)
+ppd = cm_per_dva * px_per_cm
 
 
 def deg2pix(dva):
@@ -746,9 +711,8 @@ STIM_POS_DVA = [
 stim_config = {
     "backColor": cfg.BACK_COLOR,
     "session": expInfo["ses"],
-    # pRF uses integer pixel offsets from display center.
-    "fix_pos": (np.round(np.array(deg2pix(FIX_POS_DVA)) / render_scale) * render_scale).tolist(),
-    "fix_diameter_px": cfg.FIXATION_DIAMETER_PX * render_scale,
+    "fix_pos": deg2pix(FIX_POS_DVA),
+    "fix_diameter_px": cfg.FIXATION_DIAMETER_PX,
     "fix_alpha": cfg.FIXATION_ALPHA,
     "stim_pos": deg2pix(STIM_POS_DVA),
     "mark_pos": deg2pix(STIM_POS_DVA),
@@ -2126,12 +2090,16 @@ if EYELINK_CONNECTED:
     )
     show_msg(expWin, eyelink_msg)
 
+    # Calibration uses native display coordinates, including border areas.
+    expWin.set_letterbox_enabled(False)
     try:
         el_tracker.doTrackerSetup()
         el_tracker.setOfflineMode()
     except RuntimeError as err:
         print("ERROR:", err)
         el_tracker.exitCalibration()
+    finally:
+        expWin.set_letterbox_enabled(True)
 
 else:
     eyelink_msg = (

@@ -58,85 +58,6 @@ import pylink
 from EyeLinkCoreGraphicsPsychoPy import EyeLinkCoreGraphicsPsychoPy
 
 import fips_config as cfg
-import atexit
-import pyglet
-from pyglet import gl
-
-
-def select_display_mode(screen_index, size_px, refresh_hz):
-    """Request the same real display mode used by MATLAB pton/SetResolution."""
-    screens = pyglet.canvas.get_display().get_screens()
-    if not 0 <= screen_index < len(screens):
-        raise ValueError(f"Display index {screen_index} is unavailable")
-    screen = screens[screen_index]
-    width, height = map(int, size_px)
-    matches = [mode for mode in screen.get_modes()
-               if (mode.width, mode.height, mode.rate) ==
-               (width, height, refresh_hz)]
-    if not matches:
-        logging.warning("Requested pRF display mode unavailable; using scaled 4:3 fallback")
-        return None
-    mode = max(matches, key=lambda item: item.depth)
-    screen.set_mode(mode)
-    actual = screen.get_mode()
-    if (actual.width, actual.height, actual.rate) != (width, height, refresh_hz):
-        screen.restore_mode()
-        logging.warning("Windows refused pRF display mode; using scaled 4:3 fallback")
-        return None
-    return screen
-
-
-class PRFMatchedWindow(visual.Window):
-    """Use a real fullscreen display mode and restore it when closing."""
-
-    def __init__(self, *args, match_display_mode=False, refresh_hz=60, **kwargs):
-        self._closed = True
-        self._matched_screen = None
-        self.letterbox_rect = None
-        self.render_scale = 1.0
-        if match_display_mode:
-            self._matched_screen = select_display_mode(
-                kwargs.get("screen", 0), kwargs["size"], refresh_hz
-            )
-            atexit.register(self.restore_display_mode)
-        try:
-            super().__init__(*args, **kwargs)
-            if match_display_mode:
-                actual_w, actual_h = map(int, self.frameBufferSize)
-                target_w, target_h = kwargs["size"]
-                self.render_scale = min(actual_w / target_w, actual_h / target_h)
-                if (actual_w, actual_h) != (target_w, target_h):
-                    canvas_w = round(target_w * self.render_scale)
-                    canvas_h = round(target_h * self.render_scale)
-                    self.letterbox_rect = ((actual_w-canvas_w)//2,
-                                          (actual_h-canvas_h)//2,
-                                          canvas_w, canvas_h)
-                    self._endOfFlip(True)
-        except BaseException:
-            self.restore_display_mode()
-            raise
-
-    def _endOfFlip(self, clearBuffer):
-        if self.letterbox_rect is not None:
-            if clearBuffer:
-                self.scissorTest = False
-                gl.glClearColor(0.0, 0.0, 0.0, 1.0)
-                gl.glClear(gl.GL_COLOR_BUFFER_BIT)
-                self.color = self.color
-            self.scissor = self.letterbox_rect
-            self.scissorTest = True
-        super()._endOfFlip(clearBuffer)
-
-    def restore_display_mode(self):
-        if self._matched_screen is not None:
-            screen, self._matched_screen = self._matched_screen, None
-            screen.restore_mode()
-
-    def close(self):
-        try:
-            super().close()
-        finally:
-            self.restore_display_mode()
 
 
 CODE_TEST = cfg.CODE_TEST
@@ -393,9 +314,7 @@ expMon = monitors.Monitor(
 expMon.setSizePix(monInfo["size_px"])
 expMon.save()
 
-expWin = PRFMatchedWindow(
-    match_display_mode=(cfg.FULLSCREEN and cfg.MATCH_PRF_DISPLAY_MODE and monName == "Scanner"),
-    refresh_hz=monInfo["refresh_rate"],
+expWin = visual.Window(
     monitor=expMon,
     size=monInfo["size_px"],
     screen=monInfo["screen"],
@@ -409,8 +328,6 @@ expWin = PRFMatchedWindow(
     blendMode="avg",
     waitBlanking=True,
 )
-
-logFile.write(f"Actual display pixels = {tuple(expWin.frameBufferSize)}\n")
 
 logFile.write(f"Monitor: {monName}\n")
 logFile.write(
@@ -428,12 +345,8 @@ screen_width_px = monInfo["size_px"][0]
 viewing_distance_cm = monInfo["mon_dist"]
 
 px_per_cm = screen_width_px / screen_width_cm
-# Exact conversion used by the local pRF runretinotopy.m.
-cm_per_dva = viewing_distance_cm * 0.017455
-# Scale the entire logical 1024x768 image only when the native mode failed.
-render_scale = expWin.render_scale
-ppd = cm_per_dva * px_per_cm * render_scale
-logFile.write(f"pRF render scale = {render_scale}; canvas = {expWin.letterbox_rect}\n")
+cm_per_dva = 2 * viewing_distance_cm * np.tan(np.radians(1) / 2)
+ppd = cm_per_dva * px_per_cm
 
 
 def deg2pix(dva):
@@ -746,9 +659,8 @@ STIM_POS_DVA = [
 stim_config = {
     "backColor": cfg.BACK_COLOR,
     "session": expInfo["ses"],
-    # pRF uses integer pixel offsets from display center.
-    "fix_pos": (np.round(np.array(deg2pix(FIX_POS_DVA)) / render_scale) * render_scale).tolist(),
-    "fix_diameter_px": cfg.FIXATION_DIAMETER_PX * render_scale,
+    "fix_pos": deg2pix(FIX_POS_DVA),
+    "fix_diameter_px": cfg.FIXATION_DIAMETER_PX,
     "fix_alpha": cfg.FIXATION_ALPHA,
     "stim_pos": deg2pix(STIM_POS_DVA),
     "mark_pos": deg2pix(STIM_POS_DVA),

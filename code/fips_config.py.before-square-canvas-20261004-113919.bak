@@ -94,7 +94,7 @@ MONITORS = {
     },
     "Scanner": {
         "mon_dist": 113.7,        # cm, in-bore viewing distance
-        "size_cm": (35.4, 26.5), # measured projected image
+        "size_cm": (47.5, 29.7), # measured projected image
         "size_px": (1024, 768),   # actual scanner display mode
         "refresh_rate": 60,
         "screen": 0,
@@ -103,14 +103,13 @@ MONITORS = {
 
 DEFAULT_MONITOR = "Scanner"
 
-# Match the local pRF experiment's real 1024x768 @ 60 Hz display mode.
-# Monitor/GPU scaling supplies any physical side bars, just as for MATLAB.
+# Kept at False because the source fips_stim.py uses fullscr=False.
+# Change here, not in the main experiment code, if DBIC requires fullscreen.
 FULLSCREEN = True
-MATCH_PRF_DISPLAY_MODE = True  # applied to the Scanner profile
 ALLOW_GUI = False
 
 # PsychoPy rgb color space: values are in [-1, 1].
-BACK_COLOR = [2 * 127 / 255 - 1] * 3  # pRF grayval = uint8(127)
+BACK_COLOR = [0.2, 0.2, 0.2]
 
 # ===========================================================================
 # EYELINK
@@ -141,12 +140,12 @@ SCANNER_TRIGGER_KEY = "5"
 # ONE-HEMIFIELD SPATIAL LAYOUT
 # ===========================================================================
 
-# Right: fixation at -8 dva (rounded to -342 px, matching local pRF),
-# illusion center at +2 dva. Left mirrors both horizontal positions.
+# "right" means stimulus in the right visual hemifield and fixation on the
+# left. "left" mirrors every horizontal coordinate.
 HEMIFIELD = "right"
 
-FIXATION_ECCENTRICITY_DVA = 7.0
-STIMULUS_ECCENTRICITY_DVA = 1.0
+FIXATION_ECCENTRICITY_DVA = 6.0
+STIMULUS_ECCENTRICITY_DVA = 2.0
 
 FIXATION_Y_DVA = 0.0
 STIMULUS_Y_DVA = 0.0

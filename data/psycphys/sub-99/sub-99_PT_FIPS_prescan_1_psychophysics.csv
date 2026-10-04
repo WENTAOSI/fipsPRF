@@ -1,0 +1,17 @@
+ExpCondition,InitialPosition,InducedPercept,Block,Run,Trial,InitialDirection
+FIPS,upper,left,1,1,11,right
+FIPS,upper,right,1,1,16,left
+FIPS,lower,right,1,1,14,right
+FIPS,upper,left,1,1,11,right
+FIPS,lower,left,1,1,12,left
+FIPS,lower,left,1,1,12,left
+FIPS,upper,left,1,1,11,right
+FIPS,lower,right,1,1,14,right
+FIPS,lower,left,1,1,12,left
+FIPS,upper,right,1,1,16,left
+FIPS,upper,left,1,1,11,right
+FIPS,lower,left,1,1,12,left
+FIPS,lower,right,1,1,14,right
+FIPS,lower,right,1,1,14,right
+FIPS,upper,right,1,1,16,left
+FIPS,upper,right,1,1,16,left

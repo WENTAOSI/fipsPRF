@@ -1,0 +1,31 @@
+ID: 99, Subject: PT, Experiment: FIPS, Session: scan, Run: 2
+Actual display pixels = (np.int64(1024), np.int64(768))
+Monitor: Scanner
+Distance = 113.7 cm, Width = 47.5 cm
+Pixel Width = 1024, Pixel Height = 768
+Refresh Rate = 60 Hz
+pRF render scale = 1.0; canvas = None
+Run 2 started at 2026-10-04 11:54:50
+Pre-run fixation baseline = 15.000 s
+[2026-10-04 11:55:05.042] Trial 1 Start; Condition=Veridical
+[2026-10-04 11:55:13.074] Trial 1 Stimulus Off
+Trial Duration: 22.994 seconds
+[2026-10-04 11:55:19.035] Trial 2 Start; Condition=FrameOnly
+[2026-10-04 11:55:27.064] Trial 2 Stimulus Off
+Trial Duration: 13.997 seconds
+[2026-10-04 11:55:33.044] Trial 3 Start; Condition=Perceptual
+[2026-10-04 11:55:41.073] Trial 3 Stimulus Off
+Trial Duration: 13.999 seconds
+[2026-10-04 11:55:47.035] Trial 4 Start; Condition=Veridical
+[2026-10-04 11:55:55.067] Trial 4 Stimulus Off
+Trial Duration: 13.992 seconds
+11.7857 	EXP 	Created window1 = Window(allowGUI=False, allowStencil=False, autoLog=True, backendConf=UNKNOWN, backgroundFit=<method-wrapper '__getattribute__' of attributeSetter object at 0x00000288EE5F4F40>, backgroundImage=<method-wrapper '__getattribute__' of attributeSetter object at 0x00000288EE5F5300>, bitsMode=UNKNOWN, blendMode='avg', bpc=(8, 8, 8), color=array([-1, -1, -1]), colorSpace='rgb', depthBits=8, fullscr=True, gamma=None, gammaErrorPolicy='raise', infoMsg=UNKNOWN, lms=UNKNOWN, monitor=<psychopy.monitors.calibTools.Monitor object at 0x00000288F9F815A0>, multiSample=False, name='window1', numSamples=2, pos=(0, 0), screen=0, size=array([1024,  768]), stencilBits=0, stereo=False, title='PsychoPy', units='pix', useFBO=False, useRetina=False, viewOri=0.0, viewPos=None, viewScale=None, waitBlanking=True, winType='pyglet')
+11.7858 	EXP 	window1: backgroundImage = None
+11.7858 	EXP 	window1: backgroundFit = 'cover'
+15.5399 	DATA 	Mouse: Left button down, pos=(513,384)
+15.6850 	DATA 	Mouse:  Left button up, pos=(513,384)
+16.5799 	DATA 	Keypress: return
+17.4068 	DATA 	Keypress: return
+18.5478 	DATA 	Keypress: return
+19.7829 	DATA 	Keypress: 5
+65.9707 	DATA 	Keypress: escape

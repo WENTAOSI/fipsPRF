@@ -760,7 +760,6 @@ stim_config = {
     "frame_linewidth": deg2pix(cfg.FRAME_LINEWIDTH_DVA),
     "frame_color": cfg.FRAME_COLOR,
     "frame_travel": deg2pix(cfg.FRAME_TRAVEL_DVA),
-    "frame_center_x": deg2pix(side_sign * cfg.FRAME_CENTER_DVA),
     "frame_per_sec": monInfo["refresh_rate"],
     "sec_per_frame": 1 / monInfo["refresh_rate"],
     "n_frames_per_move": (
@@ -1742,7 +1741,7 @@ def show_stimulus(
 
     if frame_present:
         frame_default_pos = (
-            stim_config["frame_center_x"]
+            stim_config["stim_pos"][0]
             - 0.5 * stim_config["frame_travel"] * dir_factor,
             stim_config["stim_pos"][1],
         )
@@ -1962,7 +1961,7 @@ def test_stimulus(trial):
     while not Resp:
         if trial_type == cfg.COND_FIPS:
             frame_default_pos = (
-                stim_config["frame_center_x"]
+                stim_config["stim_pos"][0]
                 - 0.5
                 * stim_config["frame_travel"]
                 * dir_factor,

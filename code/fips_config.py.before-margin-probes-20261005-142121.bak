@@ -142,7 +142,7 @@ SCANNER_TRIGGER_KEY = "5"
 # ===========================================================================
 
 # Match code/Current_pRF_Design.docx: fixation 4 dva from the left edge.
-# Scanner fixation rounds to -282 px; probes follow the frame midpoint.
+# Scanner fixation rounds to -282 px; probes stay at +1 dva.
 HEMIFIELD = "right"
 
 # Same width-based calibration as pRF; left hemifield mirrors the right plan.
@@ -151,7 +151,7 @@ FIXATION_ECCENTRICITY_DVA = (
     / (2 * MONITORS["Scanner"]["mon_dist"] * 0.017455)
     - 4.0
 )
-# STIMULUS_ECCENTRICITY_DVA is set from FRAME_CENTER_DVA below.
+STIMULUS_ECCENTRICITY_DVA = 1.0
 
 FIXATION_Y_DVA = 0.0
 STIMULUS_Y_DVA = 0.0
@@ -187,19 +187,18 @@ FIXATION_CHANGE_PLUS_MINUS_S = 2.0
 FIXATION_RESPONSE_KEYS = ["1", "2", "3", "4"]
 
 # Probes
-DOT_RADIUS_DVA = 0.7
-DOT_DIAMETER_DVA = 1.4
-DOT_VERTICAL_OFFSET_DVA = 3.0
+DOT_RADIUS_DVA = 0.5
+DOT_DIAMETER_DVA = 1.0
+DOT_VERTICAL_OFFSET_DVA = 2.0
 
 # Moving frame
-FRAME_WIDTH_DVA = 7.5
-FRAME_HEIGHT_DVA = 9.0
+FRAME_WIDTH_DVA = 8.0
+FRAME_HEIGHT_DVA = 8.0
 FRAME_LINEWIDTH_DVA = 0.25
 FRAME_COLOR = [0.3, 0.3, 0.3]
 # Scanner frame bounds: nearest rendered edge is 2 dva from fixation.
-# Include the Rect's 1-pixel outline and leave a visible far-edge margin.
-FRAME_FIXATION_GAP_DVA = 1.0
-FRAME_SCREEN_MARGIN_DVA = 0.5
+# Include the Rect's 1-pixel outline and keep 1 pixel inside the far edge.
+FRAME_FIXATION_GAP_DVA = 2.0
 _SCANNER_PPD = (
     MONITORS["Scanner"]["mon_dist"] * 0.017455
     * MONITORS["Scanner"]["size_px"][0]
@@ -210,11 +209,9 @@ _FRAME_NEAR_EDGE_DVA = (
     + FRAME_FIXATION_GAP_DVA
 )
 _FRAME_FAR_EDGE_DVA = (
-    MONITORS["Scanner"]["size_px"][0] / 2 - FRAME_SCREEN_MARGIN_DVA * _SCANNER_PPD
+    MONITORS["Scanner"]["size_px"][0] / 2 - 1.0
 ) / _SCANNER_PPD
 FRAME_CENTER_DVA = (_FRAME_NEAR_EDGE_DVA + _FRAME_FAR_EDGE_DVA) / 2
-# Center both probes and prescan markers on the revised frame sweep.
-STIMULUS_ECCENTRICITY_DVA = FRAME_CENTER_DVA
 FRAME_TRAVEL_DVA = (
     _FRAME_FAR_EDGE_DVA - _FRAME_NEAR_EDGE_DVA
     - FRAME_WIDTH_DVA - FRAME_LINEWIDTH_DVA - 1.0 / _SCANNER_PPD

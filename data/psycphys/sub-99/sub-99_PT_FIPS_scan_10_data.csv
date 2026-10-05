@@ -1,0 +1,6 @@
+ExpCondition,InitialPosition,InducedPercept,InitialDirection,Block,Run,Trial,scheduled_onset_run_s,scheduled_offset_run_s,stim_onset_run_s,stim_offset_run_s
+Perceptual,upper,right,NA,1,10,1,15.0,23.0,15.027843099902384,23.042921499931253
+Veridical,lower,none,NA,1,10,2,29.0,37.0,29.025628199917264,37.04263079992961
+FrameOnly,NA,none,right,1,10,3,43.0,51.0,43.025997899938375,51.041337199974805
+FIPS,upper,left,right,1,10,4,57.0,65.0,57.0248684999533,65.02447319997009
+Perceptual,upper,left,NA,1,10,5,71.0,79.0,71.02375999989454,79.0380337999668

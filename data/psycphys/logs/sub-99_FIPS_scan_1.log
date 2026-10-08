@@ -1,126 +1,108 @@
 ID: 99, Subject: PT, Experiment: FIPS, Session: scan, Run: 1
-Monitor: Scanner
-Distance = 113.7 cm, Width = 47.5 cm
-Pixel Width = 1024, Pixel Height = 768
+Actual display pixels = (np.int64(3420), np.int64(2214))
+Monitor: Macbook
+Distance = 50 cm, Width = 42 cm
+Pixel Width = 1440, Pixel Height = 900
 Refresh Rate = 60 Hz
-Run 1 started at 2026-10-04 10:59:09
+pRF render scale = 1.44140625; canvas = (234, 0, 2952, 2214)
+Scanner TR = 2.000 s; planned run = 416.000 s (208 TRs). Stimulus schedule uses seconds from the first trigger.
+Run 1 started at 2026-10-08 10:34:31
 Pre-run fixation baseline = 15.000 s
-14.5691 	EXP 	Created window1 = Window(allowGUI=False, allowStencil=False, autoLog=True, backendConf=UNKNOWN, backgroundFit=<method-wrapper '__getattribute__' of attributeSetter object at 0x000001B687B80700>, backgroundImage=<method-wrapper '__getattribute__' of attributeSetter object at 0x000001B687B83700>, bitsMode=UNKNOWN, blendMode='avg', bpc=(8, 8, 8), color=array([-1, -1, -1]), colorSpace='rgb', depthBits=8, fullscr=False, gamma=None, gammaErrorPolicy='raise', infoMsg=UNKNOWN, lms=UNKNOWN, monitor=<psychopy.monitors.calibTools.Monitor object at 0x000001B68C1558A0>, multiSample=False, name='window1', numSamples=2, pos=(448, 156), screen=0, size=array([1024,  768]), stencilBits=0, stereo=False, title='PsychoPy', units='pix', useFBO=False, useRetina=False, viewOri=0.0, viewPos=None, viewScale=None, waitBlanking=True, winType='pyglet')
-14.5692 	EXP 	window1: backgroundImage = None
-14.5692 	EXP 	window1: backgroundFit = 'cover'
-15.5321 	WARNING 	No default speaker specified in Preferences / Hardware, using first speaker found: Microsoft Sound Mapper - Output
-15.5322 	EXP 	: sampleRate = 44100
-15.5322 	EXP 	: channels = 2
-15.5326 	EXP 	: sampleRate = 44100
-15.5475 	WARNING 	No default speaker specified in Preferences / Hardware, using first speaker found: Microsoft Sound Mapper - Output
-15.5475 	EXP 	: sampleRate = 44100
-15.5475 	EXP 	: channels = 2
-15.5478 	EXP 	: sampleRate = 44100
-15.5481 	WARNING 	No default speaker specified in Preferences / Hardware, using first speaker found: Microsoft Sound Mapper - Output
-15.5481 	EXP 	: sampleRate = 44100
-15.5482 	EXP 	: channels = 2
-15.5484 	EXP 	: sampleRate = 44100
-32.5005 	DATA 	Mouse: Left button down, pos=(286,391)
-32.6051 	DATA 	Mouse:  Left button up, pos=(286,391)
-33.1398 	DATA 	Mouse: Right button down, pos=(286,391)
-33.2303 	DATA 	Mouse:  Right button up, pos=(286,391)
-33.3967 	DATA 	Mouse: Right button down, pos=(286,391)
-33.4804 	DATA 	Mouse:  Right button up, pos=(286,391)
-34.8649 	DATA 	Keypress: escape
-35.3737 	DATA 	Keypress: escape
-35.8013 	DATA 	Keypress: escape
-36.0422 	DATA 	Keypress: escape
-36.5773 	DATA 	Keypress: escape
-36.8501 	DATA 	Keypress: escape
-37.0857 	DATA 	Keypress: escape
-37.3322 	DATA 	Keypress: escape
-37.9955 	DATA 	Keypress: 5
-ID: 99, Subject: PT, Experiment: FIPS, Session: scan, Run: 1
-Monitor: Scanner
-Distance = 113.7 cm, Width = 47.5 cm
-Pixel Width = 1024, Pixel Height = 768
-Refresh Rate = 60 Hz
-Run 1 started at 2026-10-04 10:59:36
-Pre-run fixation baseline = 15.000 s
-16.4363 	EXP 	Created window1 = Window(allowGUI=False, allowStencil=False, autoLog=True, backendConf=UNKNOWN, backgroundFit=<method-wrapper '__getattribute__' of attributeSetter object at 0x000001B373A0C4C0>, backgroundImage=<method-wrapper '__getattribute__' of attributeSetter object at 0x000001B373A0C3A0>, bitsMode=UNKNOWN, blendMode='avg', bpc=(8, 8, 8), color=array([-1, -1, -1]), colorSpace='rgb', depthBits=8, fullscr=False, gamma=None, gammaErrorPolicy='raise', infoMsg=UNKNOWN, lms=UNKNOWN, monitor=<psychopy.monitors.calibTools.Monitor object at 0x000001B377CF45E0>, multiSample=False, name='window1', numSamples=2, pos=(448, 156), screen=0, size=array([1024,  768]), stencilBits=0, stereo=False, title='PsychoPy', units='pix', useFBO=False, useRetina=False, viewOri=0.0, viewPos=None, viewScale=None, waitBlanking=True, winType='pyglet')
-16.4363 	EXP 	window1: backgroundImage = None
-16.4363 	EXP 	window1: backgroundFit = 'cover'
-19.4316 	DATA 	Keypress: space
-20.4220 	DATA 	Keypress: space
-21.5115 	DATA 	Keypress: space
-22.7288 	DATA 	Keypress: 5
-6.8160 	DATA 	Keypress: escape
-ID: 99, Subject: PT, Experiment: FIPS, Session: scan, Run: 1
-Centered experiment rectangle = (420, 0, 1080, 1080)
-Monitor: Scanner
-Distance = 113.7 cm, Width = 47.5 cm
-Pixel Width = 1024, Pixel Height = 768
-Refresh Rate = 60 Hz
-Run 1 started at 2026-10-04 11:40:16
-Pre-run fixation baseline = 15.000 s
-10.3437 	WARNING 	User requested fullscreen with size [1024  768], but screen is actually [1920, 1080]. Using actual size
-12.7534 	EXP 	Created window1 = Window(allowGUI=False, allowStencil=False, autoLog=True, backendConf=UNKNOWN, backgroundFit=<method-wrapper '__getattribute__' of attributeSetter object at 0x0000022D1C8A4700>, backgroundImage=<method-wrapper '__getattribute__' of attributeSetter object at 0x0000022D1C8A4C40>, bitsMode=UNKNOWN, blendMode='avg', bpc=(8, 8, 8), color=array([-1, -1, -1]), colorSpace='rgb', depthBits=8, fullscr=True, gamma=None, gammaErrorPolicy='raise', infoMsg=UNKNOWN, lms=UNKNOWN, monitor=<psychopy.monitors.calibTools.Monitor object at 0x0000022D1C8E79A0>, multiSample=False, name='window1', numSamples=2, pos=(0, 0), screen=0, size=array([1920, 1080]), stencilBits=0, stereo=False, title='PsychoPy', units='pix', useFBO=False, useRetina=False, viewOri=0.0, viewPos=None, viewScale=None, waitBlanking=True, winType='pyglet')
-12.7535 	EXP 	window1: backgroundImage = None
-12.7535 	EXP 	window1: backgroundFit = 'cover'
-20.8239 	DATA 	Keypress: escape
-21.5463 	DATA 	Keypress: escape
-21.7129 	DATA 	Keypress: escape
-21.8651 	DATA 	Keypress: escape
-22.0008 	DATA 	Keypress: escape
-22.1475 	DATA 	Keypress: escape
-22.3006 	DATA 	Keypress: escape
-22.4689 	DATA 	Keypress: escape
-22.6259 	DATA 	Keypress: escape
-22.7774 	DATA 	Keypress: escape
-23.7768 	DATA 	Keypress: 5
-ID: 99, Subject: PT, Experiment: FIPS, Session: scan, Run: 1
-Actual display pixels = (np.int64(1024), np.int64(768))
-Monitor: Scanner
-Distance = 113.7 cm, Width = 47.5 cm
-Pixel Width = 1024, Pixel Height = 768
-Refresh Rate = 60 Hz
-pRF render scale = 1.0; canvas = None
-Run 1 started at 2026-10-04 11:48:36
-Pre-run fixation baseline = 15.000 s
-[2026-10-04 11:48:51.063] Trial 1 Start; Condition=Veridical
-[2026-10-04 11:48:59.078] Trial 1 Stimulus Off
-Trial Duration: 22.975 seconds
-[2026-10-04 11:49:05.063] Trial 2 Start; Condition=Perceptual
-[2026-10-04 11:49:13.094] Trial 2 Stimulus Off
-Trial Duration: 14.005 seconds
-[2026-10-04 11:49:19.062] Trial 3 Start; Condition=FIPS
-[2026-10-04 11:49:27.095] Trial 3 Stimulus Off
-Trial Duration: 14.000 seconds
-[2026-10-04 11:49:33.061] Trial 4 Start; Condition=Veridical
-[2026-10-04 11:49:41.091] Trial 4 Stimulus Off
-Trial Duration: 13.995 seconds
-[2026-10-04 11:49:47.058] Trial 5 Start; Condition=FrameOnly
-[2026-10-04 11:49:55.091] Trial 5 Stimulus Off
+[2026-10-08 10:34:46.613] Trial 1 Start; Condition=FrameOnly
+[2026-10-08 10:34:54.646] Trial 1 Stimulus Off
+Trial Duration: 23.033 seconds
+[2026-10-08 10:35:00.613] Trial 2 Start; Condition=FrameOnly
+[2026-10-08 10:35:08.646] Trial 2 Stimulus Off
 Trial Duration: 13.998 seconds
-[2026-10-04 11:50:01.058] Trial 6 Start; Condition=FrameOnly
-[2026-10-04 11:50:09.091] Trial 6 Stimulus Off
-Trial Duration: 13.998 seconds
-[2026-10-04 11:50:15.056] Trial 7 Start; Condition=FIPS
-[2026-10-04 11:50:23.090] Trial 7 Stimulus Off
+[2026-10-08 10:35:14.612] Trial 3 Start; Condition=FrameOnly
+[2026-10-08 10:35:22.646] Trial 3 Stimulus Off
 Trial Duration: 13.999 seconds
-[2026-10-04 11:50:29.056] Trial 8 Start; Condition=Perceptual
-[2026-10-04 11:50:37.088] Trial 8 Stimulus Off
-Trial Duration: 13.995 seconds
-[2026-10-04 11:50:43.055] Trial 9 Start; Condition=Perceptual
-[2026-10-04 11:50:51.088] Trial 9 Stimulus Off
-Trial Duration: 14.000 seconds
-11.4842 	EXP 	Created window1 = Window(allowGUI=False, allowStencil=False, autoLog=True, backendConf=UNKNOWN, backgroundFit=<method-wrapper '__getattribute__' of attributeSetter object at 0x000001D8346F6D10>, backgroundImage=<method-wrapper '__getattribute__' of attributeSetter object at 0x000001D8346F6CB0>, bitsMode=UNKNOWN, blendMode='avg', bpc=(8, 8, 8), color=array([-1, -1, -1]), colorSpace='rgb', depthBits=8, fullscr=True, gamma=None, gammaErrorPolicy='raise', infoMsg=UNKNOWN, lms=UNKNOWN, monitor=<psychopy.monitors.calibTools.Monitor object at 0x000001D8389B2EF0>, multiSample=False, name='window1', numSamples=2, pos=(0, 0), screen=0, size=array([1024,  768]), stencilBits=0, stereo=False, title='PsychoPy', units='pix', useFBO=False, useRetina=False, viewOri=0.0, viewPos=None, viewScale=None, waitBlanking=True, winType='pyglet')
-11.4843 	EXP 	window1: backgroundImage = None
-11.4843 	EXP 	window1: backgroundFit = 'cover'
-27.0682 	DATA 	Mouse: Left button down, pos=(549,506)
-27.1524 	DATA 	Mouse:  Left button up, pos=(549,506)
-29.6044 	DATA 	Keypress: return
-30.4234 	DATA 	Keypress: return
-31.5723 	DATA 	Keypress: return
-32.7876 	DATA 	Keypress: 5
-19.0798 	WARNING 	t of last frame was 19.81ms (=1/50)
-20.2790 	WARNING 	t of last frame was 19.71ms (=1/50)
-88.3243 	WARNING 	t of last frame was 19.77ms (=1/50)
-104.2562 	WARNING 	t of last frame was 19.78ms (=1/50)
-131.4210 	WARNING 	Multiple dropped frames have occurred - I'll stop bothering you about them!
-136.3680 	DATA 	Keypress: escape
+[2026-10-08 10:35:28.612] Trial 4 Start; Condition=Perceptual
+[2026-10-08 10:35:36.645] Trial 4 Stimulus Off
+Trial Duration: 13.998 seconds
+[2026-10-08 10:35:42.612] Trial 5 Start; Condition=Veridical
+[2026-10-08 10:35:50.645] Trial 5 Stimulus Off
+Trial Duration: 13.998 seconds
+[2026-10-08 10:35:56.612] Trial 6 Start; Condition=Perceptual
+[2026-10-08 10:36:04.645] Trial 6 Stimulus Off
+Trial Duration: 13.999 seconds
+[2026-10-08 10:36:10.611] Trial 7 Start; Condition=FIPS
+[2026-10-08 10:36:18.645] Trial 7 Stimulus Off
+Trial Duration: 13.998 seconds
+[2026-10-08 10:36:24.611] Trial 8 Start; Condition=FIPS
+[2026-10-08 10:36:32.644] Trial 8 Stimulus Off
+Trial Duration: 13.998 seconds
+[2026-10-08 10:36:38.611] Trial 9 Start; Condition=Perceptual
+[2026-10-08 10:36:46.644] Trial 9 Stimulus Off
+Trial Duration: 13.998 seconds
+[2026-10-08 10:36:52.611] Trial 10 Start; Condition=FIPS
+[2026-10-08 10:37:00.644] Trial 10 Stimulus Off
+Trial Duration: 13.998 seconds
+[2026-10-08 10:37:06.606] Trial 11 Start; Condition=Veridical
+[2026-10-08 10:37:14.618] Trial 11 Stimulus Off
+Trial Duration: 13.982 seconds
+[2026-10-08 10:37:20.599] Trial 12 Start; Condition=FIPS
+[2026-10-08 10:37:28.631] Trial 12 Stimulus Off
+Trial Duration: 14.015 seconds
+[2026-10-08 10:37:34.597] Trial 13 Start; Condition=Perceptual
+[2026-10-08 10:37:42.629] Trial 13 Stimulus Off
+Trial Duration: 13.998 seconds
+[2026-10-08 10:37:48.595] Trial 14 Start; Condition=FrameOnly
+[2026-10-08 10:37:56.628] Trial 14 Stimulus Off
+Trial Duration: 13.998 seconds
+[2026-10-08 10:38:02.595] Trial 15 Start; Condition=FIPS
+[2026-10-08 10:38:10.628] Trial 15 Stimulus Off
+Trial Duration: 13.998 seconds
+[2026-10-08 10:38:16.594] Trial 16 Start; Condition=Perceptual
+[2026-10-08 10:38:24.627] Trial 16 Stimulus Off
+Trial Duration: 13.998 seconds
+[2026-10-08 10:38:30.594] Trial 17 Start; Condition=FrameOnly
+[2026-10-08 10:38:38.627] Trial 17 Stimulus Off
+Trial Duration: 13.999 seconds
+[2026-10-08 10:38:44.594] Trial 18 Start; Condition=Perceptual
+[2026-10-08 10:38:52.627] Trial 18 Stimulus Off
+Trial Duration: 13.998 seconds
+[2026-10-08 10:38:58.594] Trial 19 Start; Condition=Veridical
+[2026-10-08 10:39:06.627] Trial 19 Stimulus Off
+Trial Duration: 13.998 seconds
+[2026-10-08 10:39:12.593] Trial 20 Start; Condition=FIPS
+[2026-10-08 10:39:20.626] Trial 20 Stimulus Off
+Trial Duration: 13.998 seconds
+[2026-10-08 10:39:26.593] Trial 21 Start; Condition=FrameOnly
+[2026-10-08 10:39:34.626] Trial 21 Stimulus Off
+Trial Duration: 13.998 seconds
+[2026-10-08 10:39:40.593] Trial 22 Start; Condition=Veridical
+[2026-10-08 10:39:48.626] Trial 22 Stimulus Off
+Trial Duration: 13.998 seconds
+[2026-10-08 10:39:54.592] Trial 23 Start; Condition=FIPS
+[2026-10-08 10:40:02.625] Trial 23 Stimulus Off
+Trial Duration: 13.998 seconds
+[2026-10-08 10:40:08.592] Trial 24 Start; Condition=FrameOnly
+[2026-10-08 10:40:16.625] Trial 24 Stimulus Off
+Trial Duration: 13.998 seconds
+[2026-10-08 10:40:22.592] Trial 25 Start; Condition=FrameOnly
+[2026-10-08 10:40:30.625] Trial 25 Stimulus Off
+Trial Duration: 13.998 seconds
+[2026-10-08 10:40:36.592] Trial 26 Start; Condition=Perceptual
+[2026-10-08 10:40:44.625] Trial 26 Stimulus Off
+Trial Duration: 13.998 seconds
+[2026-10-08 10:40:50.591] Trial 27 Start; Condition=Perceptual
+[2026-10-08 10:40:58.624] Trial 27 Stimulus Off
+Trial Duration: 13.997 seconds
+[2026-10-08 10:41:04.591] Trial 28 Start; Condition=FIPS
+[2026-10-08 10:41:12.624] Trial 28 Stimulus Off
+Trial Duration: 13.998 seconds
+Post-run fixation baseline = 15.000 s
+The experiment took 416.004 seconds
+15.2045 	WARNING 	User requested fullscreen with size [1440  900], but screen is actually [1710, 1107]. Using actual size
+17.2529 	DATA 	Keypress: return
+17.5098 	EXP 	Created window1 = Window(allowGUI=False, allowStencil=False, autoLog=True, backendConf=UNKNOWN, backgroundFit=<method-wrapper '__getattribute__' of attributeSetter object at 0x30cd02790>, backgroundImage=<method-wrapper '__getattribute__' of attributeSetter object at 0x30cd02510>, bitsMode=UNKNOWN, blendMode='avg', bpc=(8, 8, 8), color=array([-1, -1, -1]), colorSpace='rgb', depthBits=8, fullscr=True, gamma=None, gammaErrorPolicy='raise', infoMsg=UNKNOWN, lms=UNKNOWN, monitor=<psychopy.monitors.calibTools.Monitor object at 0x31018f750>, multiSample=False, name='window1', numSamples=2, pos=[np.float64(0.0), np.float64(0.0)], screen=0, size=array([3420, 2214]), stencilBits=0, stereo=False, title='PsychoPy', units='pix', useFBO=False, useRetina=True, viewOri=0.0, viewPos=None, viewScale=None, waitBlanking=True, winType='pyglet')
+17.5098 	EXP 	window1: backgroundImage = None
+17.5098 	EXP 	window1: backgroundFit = 'cover'
+18.6432 	DATA 	Keypress: return
+19.3495 	DATA 	Keypress: return
+19.5405 	DATA 	Keypress: return
+19.7096 	DATA 	Keypress: return
+19.8566 	DATA 	Keypress: return
+20.6026 	DATA 	Keypress: 5
+466.5055 	DATA 	Keypress: return

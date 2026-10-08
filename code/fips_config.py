@@ -13,13 +13,13 @@ Keep this file in the SAME directory as:
 
 The defaults below implement the current one-hemifield thesis design:
     - 10 scanner runs
-    - 24 trials/run
-    - 4 conditions, 6 trials/condition/run
-    - 3 mini-blocks/run, each with 2 trials/condition
+    - 28 trials/run
+    - 4 conditions: 8 FIPS, 4 Veridical, 8 Perceptual, 8 FrameOnly trials/run
+    - 3 mini-blocks/run: 3/3/2 FIPS, 2/1/1 Veridical, 3/3/2 Perceptual, 3/3/2 FrameOnly
     - 8 s stimulus
     - 6 s fixation-only ITI between trials
     - 15 s fixation-only baseline at run start and run end
-    - total = 360 s = 6:00/run
+    - total = 416 s = 6:56/run
 
 The participant-specific perceptual-match displacement is NOT hard-coded here.
 The main script loads it automatically from the prescan summary CSV, matching
@@ -48,8 +48,8 @@ PREVIEW_MODE = False
 # These values are NEVER used when Eyelink Connected is "yes" unless
 # PREVIEW_MODE is explicitly turned on.
 DUMMY_SCAN_USE_FAKE_PRESCAN = True
-PREVIEW_PRESCAN_LEFT_DVA = 0.30
-PREVIEW_PRESCAN_RIGHT_DVA = 0.30
+PREVIEW_PRESCAN_LEFT_DVA = 0.75
+PREVIEW_PRESCAN_RIGHT_DVA = 0.75
 
 
 DEFAULT_SUB_ID = "99"
@@ -136,6 +136,9 @@ EYE_USED = 1  # 1 = right, 0 = left
 # ===========================================================================
 
 SCANNER_TRIGGER_KEY = "5"
+# Acquisition metadata. Stimulus timings below are already in seconds;
+# do not multiply them by TR or wait for a pulse for each stimulus step.
+SCANNER_TR_S = 2.0
 
 # ===========================================================================
 # ONE-HEMIFIELD SPATIAL LAYOUT
@@ -179,8 +182,8 @@ FIXATION_COLOR_NAMES = ["red", "black", "white"]
 # frameduration=4 at 60 Hz -> 15 fixation-task frames/s.
 # The random SOA is approximately 1-5 s, quantized to 1/15 s.
 FIXATION_TASK_HZ = 15.0
-FIXATION_CHANGE_MEAN_S = 3.0
-FIXATION_CHANGE_PLUS_MINUS_S = 2.0
+FIXATION_CHANGE_MEAN_S = 15.0
+FIXATION_CHANGE_PLUS_MINUS_S = 5.0
 
 # Kay's public instructions say "press a button whenever the dot color changes"
 # but do not prescribe one specific response key.
@@ -243,9 +246,9 @@ PRESCAN = {
 }
 
 SCAN = {
-    "n_trials": 24,
+    "n_trials": 28,
     "n_runs": 10,
-    "n_blocks": 3,  # 3 mini-blocks; each contains 2 trials/condition
+    "n_blocks": 3,  # 3 mini-blocks: 3/3/2 FIPS, 2/1/1 Veridical, 3/3/2 Perceptual, 3/3/2 FrameOnly
     "cycle": 8,
     "pre_run_baseline": 15.0,
     "post_run_baseline": 15.0,

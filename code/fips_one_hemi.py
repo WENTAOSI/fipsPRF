@@ -26,7 +26,7 @@ What changes for the thesis:
           Veridical
           Perceptual
           FrameOnly
-    - 24 trials/run, 6/condition, organized as 3 mini-blocks
+    - 28 trials/run: 8 FIPS, 4 Veridical, 8 Perceptual, and 8 FrameOnly, in 3 mini-blocks
     - 15 s pre/post fixation-only baselines and 6 s fixation-only ITIs
     - frame-only condition
     - all tunable experiment parameters moved to fips_config.py
@@ -89,7 +89,8 @@ def select_display_mode(screen_index, size_px, refresh_hz):
 class PRFMatchedWindow(visual.Window):
     """Use a real fullscreen display mode and restore it when closing."""
 
-    def __init__(self, *args, match_display_mode=False, refresh_hz=60, **kwargs):
+    def __init__(self, *args, match_display_mode=False, refresh_hz=60,
+                 preview_canvas_px=None, **kwargs):
         self._closed = True
         self._matched_screen = None
         self.letterbox_rect = None
@@ -112,6 +113,19 @@ class PRFMatchedWindow(visual.Window):
                                           (actual_h-canvas_h)//2,
                                           canvas_w, canvas_h)
                     self._endOfFlip(True)
+            elif preview_canvas_px is not None:
+                # Scissor coordinates use framebuffer pixels; PsychoPy's pix
+                # drawing units use half that resolution on Retina displays.
+                actual_w, actual_h = map(int, self.frameBufferSize)
+                target_w, target_h = preview_canvas_px
+                framebuffer_scale = min(actual_w / target_w, actual_h / target_h)
+                self.render_scale = framebuffer_scale / (2 if self.useRetina else 1)
+                canvas_w = round(target_w * framebuffer_scale)
+                canvas_h = round(target_h * framebuffer_scale)
+                self.letterbox_rect = ((actual_w - canvas_w) // 2,
+                                      (actual_h - canvas_h) // 2,
+                                      canvas_w, canvas_h)
+                self._endOfFlip(True)
         except BaseException:
             self.restore_display_mode()
             raise
@@ -395,6 +409,7 @@ expMon.save()
 
 expWin = PRFMatchedWindow(
     match_display_mode=(cfg.FULLSCREEN and cfg.MATCH_PRF_DISPLAY_MODE and monName == "Scanner"),
+    preview_canvas_px=(cfg.MONITORS["Scanner"]["size_px"] if monName == "Macbook" else None),
     refresh_hz=monInfo["refresh_rate"],
     monitor=expMon,
     size=monInfo["size_px"],
@@ -433,6 +448,14 @@ cm_per_dva = viewing_distance_cm * 0.017455
 # Scale the entire logical 1024x768 image only when the native mode failed.
 render_scale = expWin.render_scale
 ppd = cm_per_dva * px_per_cm * render_scale
+if monName == "Macbook":
+    # Match Scanner's composition, independently of laptop physical geometry.
+    scanner_info = cfg.MONITORS["Scanner"]
+    ppd = (
+        scanner_info["mon_dist"] * 0.017455
+        * scanner_info["size_px"][0] / scanner_info["size_cm"][0]
+        * render_scale
+    )
 logFile.write(f"pRF render scale = {render_scale}; canvas = {expWin.letterbox_rect}\n")
 
 
@@ -574,52 +597,45 @@ def source_initial_direction(initial_position, induced_percept):
     return "left"
 
 
-def six_balanced_probe_trials(condition, run_number):
-    """
-    Six trials with:
-        3 induced-left / 3 induced-right
-        3 upper-first / 3 lower-first
-
-    For FIPS, those two constraints make perfect 3/3 frame-start balancing
-    mathematically impossible within only six trials. We alternate the 4/2
-    imbalance across odd/even runs, producing 30/30 across 10 runs.
-    """
-    if run_number % 2 == 1:
-        pairs = [
-            ("upper", "left"),
-            ("upper", "right"),
-            ("lower", "left"),
-            ("lower", "right"),
-            ("upper", "left"),
-            ("lower", "right"),
-        ]
-    else:
-        pairs = [
-            ("upper", "left"),
-            ("upper", "right"),
-            ("lower", "left"),
-            ("lower", "right"),
-            ("upper", "right"),
-            ("lower", "left"),
-        ]
-
+def eight_fips_trials():
+    """Two trials per apparent-tilt / frame-start-position combination."""
     trials = []
-    for initial_position, induced_percept in pairs:
-        trial = {
-            "ExpCondition": condition,
-            "InitialPosition": initial_position,
-            "InducedPercept": induced_percept,
-            "InitialDirection": (
-                source_initial_direction(initial_position, induced_percept)
-                if condition == cfg.COND_FIPS
-                else "NA"
-            ),
-        }
-        trials.append(trial)
+    for induced_percept in ("left", "right"):
+        for frame_start in ("left", "right"):
+            # A frame starting on the left first moves right, and vice versa.
+            direction = "right" if frame_start == "left" else "left"
+            initial_position = next(
+                pos for pos in ("upper", "lower")
+                if source_initial_direction(pos, induced_percept) == direction
+            )
+            for _ in range(2):
+                trials.append({
+                    "ExpCondition": cfg.COND_FIPS,
+                    "InitialPosition": initial_position,
+                    "InducedPercept": induced_percept,
+                    "InitialDirection": direction,
+                    "FrameStartPosition": frame_start,
+                    "FIPSCategory": f"{induced_percept}_tilt_frame_starts_{frame_start}",
+                })
     return trials
 
 
-def six_veridical_trials():
+def eight_perceptual_trials():
+    """Four trials per tilt, with two upper-first and two lower-first each."""
+    return [
+        {
+            "ExpCondition": cfg.COND_PERCEPTUAL,
+            "InitialPosition": position,
+            "InducedPercept": tilt,
+            "InitialDirection": "NA",
+        }
+        for tilt in ("left", "right")
+        for position in ("upper", "lower")
+        for _ in range(2)
+    ]
+
+
+def four_veridical_trials():
     return [
         {
             "ExpCondition": cfg.COND_VERIDICAL,
@@ -627,55 +643,50 @@ def six_veridical_trials():
             "InducedPercept": "none",
             "InitialDirection": "NA",
         }
-        for pos in ["upper", "lower", "upper", "lower", "upper", "lower"]
+        for pos in ["upper", "lower", "upper", "lower"]
     ]
 
 
-def six_frame_only_trials():
-    # No probe is shown, so only the moving-frame start direction matters.
+def eight_frame_only_trials():
+    # Four trials start on each side, moving toward the opposite side.
     return [
         {
             "ExpCondition": cfg.COND_FRAME_ONLY,
             "InitialPosition": "NA",
             "InducedPercept": "none",
             "InitialDirection": direction,
+            "FrameStartPosition": "left" if direction == "right" else "right",
         }
-        for direction in ["left", "right", "left", "right", "left", "right"]
+        for direction in ["left", "right"] * 4
     ]
 
 
 def build_scan_trials(run_number):
-    """
-    24 trials total:
-        6 FIPS
-        6 Veridical
-        6 Perceptual
-        6 FrameOnly
+    """28 trials: 8 FIPS, 4 Veridical, 8 Perceptual, and 8 FrameOnly.
 
-    Three mini-blocks. Each mini-block contains exactly two trials from
-    each condition, randomized within that mini-block.
+    Three randomized mini-blocks contain 3, 3, and 2 FIPS trials,
+    respectively, plus 3/3/2 Perceptual, 2/1/1 Veridical, and 3/3/2 FrameOnly.
     """
-    fips = six_balanced_probe_trials(cfg.COND_FIPS, run_number)
-    perceptual = six_balanced_probe_trials(
-        cfg.COND_PERCEPTUAL,
-        run_number,
-    )
-    veridical = six_veridical_trials()
-    frame_only = six_frame_only_trials()
+    fips = np.random.permutation(eight_fips_trials()).tolist()
+    perceptual = np.random.permutation(eight_perceptual_trials()).tolist()
+    veridical = four_veridical_trials()
+    frame_only = np.random.permutation(eight_frame_only_trials()).tolist()
 
     all_trials = []
 
-    for block in range(1, 4):
-        start = (block - 1) * 2
-        stop = start + 2
-
+    fips_start = 0
+    veridical_start = 0
+    for block, fips_count in enumerate((3, 3, 2), start=1):
+        veridical_count = (2, 1, 1)[block - 1]
         block_trials = (
-            fips[start:stop]
-            + veridical[start:stop]
-            + perceptual[start:stop]
-            + frame_only[start:stop]
+            fips[fips_start:fips_start + fips_count]
+            + veridical[veridical_start:veridical_start + veridical_count]
+            + perceptual[fips_start:fips_start + fips_count]
+            + frame_only[fips_start:fips_start + fips_count]
         )
 
+        veridical_start += veridical_count
+        fips_start += fips_count
         block_trials = np.random.permutation(block_trials).tolist()
 
         for t in block_trials:
@@ -787,6 +798,20 @@ stim_config["duration_one_way"] = (
 stim_config["duration_stimulus"] = (
     stim_config["duration_one_way"] * 2 * exp["cycle"]
 )
+
+if expInfo["ses"] == "scan":
+    planned_run_s = (
+        exp["pre_run_baseline"]
+        + len(TRIALS) * stim_config["duration_stimulus"]
+        + max(len(TRIALS) - 1, 0) * exp["ITI"]
+        + exp["post_run_baseline"]
+    )
+    logFile.write(
+        f"Scanner TR = {cfg.SCANNER_TR_S:.3f} s; "
+        f"planned run = {planned_run_s:.3f} s "
+        f"({planned_run_s / cfg.SCANNER_TR_S:g} TRs). "
+        "Stimulus schedule uses seconds from the first trigger.\n"
+    )
 
 expWin.colorSpace = "rgb"
 expWin.color = stim_config["backColor"]
@@ -940,7 +965,7 @@ frame_outer = visual.Rect(
     width=stim_config["frame_width"] + stim_config["frame_linewidth"],
     height=stim_config["frame_height"] + stim_config["frame_linewidth"],
     lineColor=stim_config["frame_color"],
-    lineWidth=1,
+    lineWidth=render_scale if monName == "Macbook" else 1,
     interpolate=False,
     fillColor=stim_config["frame_color"],
     autoLog=False,
@@ -952,7 +977,7 @@ frame_inner = visual.Rect(
     width=stim_config["frame_width"],
     height=stim_config["frame_height"],
     lineColor=stim_config["backColor"],
-    lineWidth=1,
+    lineWidth=render_scale if monName == "Macbook" else 1,
     interpolate=False,
     fillColor=stim_config["backColor"],
     autoLog=False,

@@ -1,47 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-One-hemifield FIPS thesis experiment.
+"""One-hemifield FIPS experiment with scanner triggering and EyeLink recording."""
 
-This file deliberately keeps the architecture and scanner/EyeLink workflow
-close to WENTAOSI/fipsPRF/exp/code/fips_stim.py.
-
-What is retained from fips_stim.py:
-    - PsychoPy GUI and monitor selection
-    - subject/run bookkeeping and CSV logging
-    - automatic loading of the participant's prescan FIPS magnitude
-    - EyeLink connection / dummy mode
-    - EDF creation, calibration, recording, messages, transfer
-    - scanner trigger key "5"
-    - frame-interval logging
-    - prescan matching workflow
-    - 450 ms frame motion + 50 ms endpoint flash logic
-    - checkerboard probes
-    - graceful end-of-run handling
-
-What changes for the thesis:
-    - one visual hemifield, controlled in fips_config.py
-    - four scan conditions:
-          FIPS
-          Veridical
-          Perceptual
-          FrameOnly
-    - 28 trials/run: 8 FIPS, 4 Veridical, 8 Perceptual, and 8 FrameOnly, in 3 mini-blocks
-    - 15 s pre/post fixation-only baselines and 6 s fixation-only ITIs
-    - frame-only condition
-    - all tunable experiment parameters moved to fips_config.py
-    - exact Kay-style fixation-color attention task during scan periods:
-      4-pixel dot, 50% alpha, red/black/white, random ~1-5 s changes,
-      participant presses a response button whenever the color changes
-
-Keep this file in the same directory as:
-    fips_config.py
-    EyeLinkCoreGraphicsPsychoPy.py
-"""
-
-# ===========================================================================
 # DEBUG / IMPORTS
-# ===========================================================================
 
 from psychopy import visual, event, core, monitors, logging, gui, data
 from psychopy.tools.attributetools import undefined
@@ -49,7 +10,6 @@ import numpy as np
 import copy
 import os
 import pandas as pd
-import csv
 from pathlib import Path
 from datetime import datetime
 import sys
@@ -64,7 +24,7 @@ from pyglet import gl
 
 
 def select_display_mode(screen_index, size_px, refresh_hz):
-    """Request the same real display mode used by MATLAB pton/SetResolution."""
+    """Request the pRF display resolution and refresh rate."""
     screens = pyglet.canvas.get_display().get_screens()
     if not 0 <= screen_index < len(screens):
         raise ValueError(f"Display index {screen_index} is unavailable")
@@ -87,7 +47,7 @@ def select_display_mode(screen_index, size_px, refresh_hz):
 
 
 class PRFMatchedWindow(visual.Window):
-    """Use a real fullscreen display mode and restore it when closing."""
+    """Restore the display mode when the fullscreen window closes."""
 
     def __init__(self, *args, match_display_mode=False, refresh_hz=60,
                  preview_canvas_px=None, **kwargs):
@@ -114,8 +74,7 @@ class PRFMatchedWindow(visual.Window):
                                           canvas_w, canvas_h)
                     self._endOfFlip(True)
             elif preview_canvas_px is not None:
-                # Scissor coordinates use framebuffer pixels; PsychoPy's pix
-                # drawing units use half that resolution on Retina displays.
+                # Scissor coordinates use framebuffer pixels; Retina drawing units are halved.
                 actual_w, actual_h = map(int, self.frameBufferSize)
                 target_w, target_h = preview_canvas_px
                 framebuffer_scale = min(actual_w / target_w, actual_h / target_h)
@@ -158,9 +117,7 @@ DEBUG_ON_VSCODE = cfg.DEBUG_ON_VSCODE
 TASK = cfg.TASK
 
 
-# ===========================================================================
 # SESSION INFO / DATA PATHS
-# ===========================================================================
 
 expInfo = {
     "sub_id": cfg.DEFAULT_SUB_ID,
@@ -172,50 +129,42 @@ ROOTDIR = Path(__file__).resolve().parent
 DATADIR = (ROOTDIR / cfg.DATA_DIR).resolve()
 DATADIR.mkdir(parents=True, exist_ok=True)
 
-# Preserve the source script's convenience behavior, but only use actual
-# trial-data CSVs when deciding what subject/run was most recent.
-sub_dirs = sorted(
-    [d for d in DATADIR.iterdir() if d.is_dir() and d.name.startswith("sub-")],
-    key=os.path.getctime,
-    reverse=True,
-)
+# Automatically select the next scan run from existing BIDS files.
+bids_root = (ROOTDIR / cfg.BIDS_DATA_DIR).resolve()
+bids_session = str(cfg.BIDS_SESSION_ID).zfill(2)
 
-if sub_dirs:
-    recent_subdir = sub_dirs[0]
-    sub_id_guess = recent_subdir.name.replace("sub-", "")
-    csv_files = sorted(
-        recent_subdir.glob("*_data.csv"),
-        key=os.path.getctime,
-        reverse=True,
+existing_events = list(bids_root.glob(
+    f"sub-*/ses-{bids_session}/"
+    f"sub-*_ses-{bids_session}_task-{TASK}_run-*_events.tsv"
+))
+
+if existing_events:
+    latest_file = max(
+        existing_events,
+        key=lambda path: path.stat().st_mtime
     )
 
-    if csv_files:
-        recent_file = csv_files[0]
-        name_parts = recent_file.stem.split("_")
-        # Expected:
-        # sub-01_AB_FIPS_scan_3_data
-        if len(name_parts) >= 6:
-            file_sub_name = name_parts[1]
-            file_session = name_parts[3]
-            file_run = name_parts[4]
+    latest_subject = latest_file.parent.parent.name
+    expInfo["sub_id"] = latest_subject.removeprefix("sub-")
 
-            if file_run.isdigit():
-                expInfo["sub_id"] = sub_id_guess.zfill(2)
-                expInfo["sub_name"] = file_sub_name
+    subject_dir = bids_root / latest_subject / f"ses-{bids_session}"
 
-                if file_session == "prescan":
-                    expInfo["run"] = file_run
-                elif file_session == "scan":
-                    last_run = int(file_run)
-                    if last_run < cfg.SCAN["n_runs"]:
-                        expInfo["run"] = str(last_run + 1)
-                    else:
-                        expInfo["run"] = str(cfg.SCAN["n_runs"])
+    existing_runs = []
 
+    for path in subject_dir.glob(
+        f"{latest_subject}_ses-{bids_session}_task-{TASK}_run-*_events.tsv"
+    ):
+        run_text = path.name.rsplit("_run-", 1)[-1].removesuffix(
+            "_events.tsv"
+        )
 
-# ===========================================================================
+        if run_text.isdigit():
+            existing_runs.append(int(run_text))
+
+    if existing_runs:
+        expInfo["run"] = str(max(existing_runs) + 1)
+
 # GUI
-# ===========================================================================
 
 dlg = gui.Dlg(title=TASK)
 dlg.addField("Subject ID:", expInfo["sub_id"])
@@ -256,74 +205,109 @@ expInfo.update(
     }
 )
 
+# Confirm unusual scan run selections.
+if expInfo["ses"] == "scan":
+    selected_run = int(expInfo["run"])
+    selected_sub = f"{int(expInfo['sub_id']):02d}"
+
+    warnings = []
+
+    # Warn if the run exceeds the configured maximum.
+    if selected_run > cfg.SCAN["n_runs"]:
+        warnings.append(
+            f"Run {selected_run} exceeds the configured maximum "
+            f"of {cfg.SCAN['n_runs']} runs."
+        )
+
+    # Warn if the immediately preceding run does not exist.
+    if selected_run > 1:
+        previous_run = selected_run - 1
+        previous_run_id = f"{previous_run:02d}"
+
+        previous_events = (
+            bids_root
+            / f"sub-{selected_sub}"
+            / f"ses-{bids_session}"
+            / f"sub-{selected_sub}_ses-{bids_session}_task-{TASK}_run-{previous_run_id}_events.tsv"
+        )
+
+        if not previous_events.is_file():
+            warnings.append(
+                f"Run {previous_run} does not exist "
+                f"for subject {selected_sub}, session {bids_session}."
+            )
+
+    # Show one confirmation popup if any warning applies.
+    if warnings:
+        confirmation = gui.Dlg(title="Confirm Scan Run")
+
+        confirmation.addText(
+            "\n\n".join(warnings)
+            + "\n\nDo you want to continue with this run?"
+        )
+
+        confirmation.show()
+
+        if not confirmation.OK:
+            core.quit()
+
+
 FLASH_GRAB = expInfo["stimulus"] == "checkerboard"
 EYELINK_CONNECTED = expInfo["eyelink"] == "yes"
 
-# For this experiment, a dummy scan means:
-#   Session = scan
-#   Eyelink Connected = no
-#
-# Dummy scans are for testing only and can use fake prescan displacement
-# values so that Perceptual trials render without a participant prescan.
+# Dummy scans can use test displacements without a prescan.
 DUMMY_SCAN = (
     expInfo["ses"] == "scan"
     and not EYELINK_CONNECTED
 )
 
 
-# ===========================================================================
 # SAVING / LOGGING
-# ===========================================================================
 
 sub_id = f"{int(expInfo['sub_id']):02d}"
 run_id = f"{int(expInfo['run']):02d}"
 
 SUBDIR = DATADIR / f"sub-{sub_id}"
-LOGDIR = DATADIR / "logs"
 EDFDIR = DATADIR / "edf"
 
-for directory in [SUBDIR, LOGDIR, EDFDIR]:
+for directory in [SUBDIR, EDFDIR]:
     directory.mkdir(parents=True, exist_ok=True)
 
-trialsName = (
-    SUBDIR
-    / f"sub-{sub_id}_{expInfo['sub_name']}_{TASK}_{expInfo['ses']}_{expInfo['run']}_psychophysics.csv"
-)
-dataName = (
-    SUBDIR
-    / f"sub-{sub_id}_{expInfo['sub_name']}_{TASK}_{expInfo['ses']}_{expInfo['run']}_data.csv"
-)
+BIDS_EVENTS_NAME = None
 
-framesName = (
-    LOGDIR
-    / f"sub-{sub_id}_{TASK}_{expInfo['ses']}_{expInfo['run']}_frames.csv"
-)
-fixationTaskName = (
-    LOGDIR
-    / f"sub-{sub_id}_{TASK}_{expInfo['ses']}_{expInfo['run']}_fixation_task.csv"
-)
-logName = (
-    LOGDIR
-    / f"sub-{sub_id}_{TASK}_{expInfo['ses']}_{expInfo['run']}.log"
-)
+if expInfo["ses"] == "scan":
+    bids_session = str(cfg.BIDS_SESSION_ID).zfill(2)
 
-logFile = logging.LogFile(str(logName), level=logging.EXP)
-logFile.write(
-    f"ID: {expInfo['sub_id']}, "
-    f"Subject: {expInfo['sub_name']}, "
-    f"Experiment: {TASK}, "
-    f"Session: {expInfo['ses']}, "
-    f"Run: {expInfo['run']}\n"
-)
+    bids_dir = (
+        ROOTDIR / cfg.BIDS_DATA_DIR
+        / f"sub-{sub_id}" / f"ses-{bids_session}"
+    ).resolve()
+
+    bids_dir.mkdir(parents=True, exist_ok=True)
+
+    BIDS_EVENTS_NAME = (
+        bids_dir
+        / f"sub-{sub_id}_ses-{bids_session}_task-{TASK}_run-{run_id}_events.tsv"
+    )
+
+    if BIDS_EVENTS_NAME.exists():
+        raise FileExistsError(
+            f"BIDS events file already exists: {BIDS_EVENTS_NAME}\n"
+            "Choose a different run number to avoid overwriting data."
+        )
+
+class _NoFileLog:
+    def write(self, message):
+        pass
+
+logFile = _NoFileLog()
 logging.console.setLevel(logging.WARNING)
 
-# EyeLink Host filenames should stay short. For the default TASK="FIPS":
-# e.g. 01FIPS01.EDF
+# EyeLink Host filenames must be short (e.g. 01FIPS01.EDF).
 edf_fname = f"{sub_id}{TASK[:4].upper()}{run_id}"
 edf_file = edf_fname + ".EDF"
 
-# Unlike the source script, include run in the LOCAL EDF filename so repeated
-# scan runs do not overwrite each other.
+# Include the run to avoid overwriting local EDF files.
 session_identifier = (
     f"sub-{sub_id}_{expInfo['sub_name']}_{TASK}_{expInfo['ses']}_run-{run_id}"
 )
@@ -332,9 +316,7 @@ session_folder.mkdir(parents=True, exist_ok=True)
 local_edf = session_folder / f"{session_identifier}.EDF"
 
 
-# ===========================================================================
 # LOAD PRESCAN SUMMARY
-# ===========================================================================
 
 PRESCAN_LEFT = 0.0
 PRESCAN_RIGHT = 0.0
@@ -378,6 +360,17 @@ if use_fake_prescan:
 
 elif predataName.exists():
     prescan_summary_df = pd.read_csv(predataName)
+    if expInfo["ses"] == "scan":
+        required = ["left", "right", "avg"]
+
+        if (
+            len(prescan_summary_df) != cfg.PRESCAN["n_trials"]
+            or not all(c in prescan_summary_df.columns for c in required)
+            or prescan_summary_df.loc[0, required].isna().any()
+        ):
+            raise RuntimeError(
+                f"Prescan data is incomplete: {predataName}"
+            )
     PRESCAN_LEFT = float(prescan_summary_df.loc[0, "left"])
     PRESCAN_RIGHT = float(prescan_summary_df.loc[0, "right"])
     PRESCAN_AVG = float(prescan_summary_df.loc[0, "avg"])
@@ -392,9 +385,7 @@ else:
     prescan_text = f"Prescan summary file not found:\n{predataName}"
 
 
-# ===========================================================================
 # MONITOR / WINDOW
-# ===========================================================================
 
 monName = expInfo["monitor"]
 monInfo = cfg.MONITORS[monName]
@@ -405,7 +396,6 @@ expMon = monitors.Monitor(
     distance=monInfo["mon_dist"],
 )
 expMon.setSizePix(monInfo["size_px"])
-expMon.save()
 
 expWin = PRFMatchedWindow(
     match_display_mode=(cfg.FULLSCREEN and cfg.MATCH_PRF_DISPLAY_MODE and monName == "Scanner"),
@@ -443,13 +433,13 @@ screen_width_px = monInfo["size_px"][0]
 viewing_distance_cm = monInfo["mon_dist"]
 
 px_per_cm = screen_width_px / screen_width_cm
-# Exact conversion used by the local pRF runretinotopy.m.
+# Use the pRF pixel-to-degree conversion.
 cm_per_dva = viewing_distance_cm * 0.017455
-# Scale the entire logical 1024x768 image only when the native mode failed.
+# Scale the logical canvas if the requested display mode is unavailable.
 render_scale = expWin.render_scale
 ppd = cm_per_dva * px_per_cm * render_scale
 if monName == "Macbook":
-    # Match Scanner's composition, independently of laptop physical geometry.
+    # Keep laptop preview geometry consistent with Scanner.
     scanner_info = cfg.MONITORS["Scanner"]
     ppd = (
         scanner_info["mon_dist"] * 0.017455
@@ -465,9 +455,7 @@ def deg2pix(dva):
     return dva * ppd
 
 
-# ===========================================================================
 # EYELINK SETUP
-# ===========================================================================
 
 if EYELINK_CONNECTED:
     try:
@@ -568,9 +556,7 @@ genv.setCalibrationSounds("", "", "")
 pylink.openGraphicsEx(genv)
 
 
-# ===========================================================================
 # EXPERIMENT PARAMETERS
-# ===========================================================================
 
 exp = copy.deepcopy(
     cfg.SCAN if expInfo["ses"] == "scan" else cfg.PRESCAN
@@ -580,75 +566,58 @@ if CODE_TEST:
     exp["n_trials"] = cfg.CODE_TEST_N_TRIALS
 
 
-# ===========================================================================
 # TRIAL GENERATION
-# ===========================================================================
 
-def source_initial_direction(initial_position, induced_percept):
-    """
-    Same FIPS mapping used in the source fips_stim.py.
-    """
-    if (
-        (initial_position == "upper" and induced_percept == "left")
-        or
-        (initial_position == "lower" and induced_percept == "right")
-    ):
-        return "right"
-    return "left"
+def source_initial_direction(induced_percept):
+    """Frame direction for upper-first flashes and the requested tilt."""
+    return "right" if induced_percept == "left" else "left"
 
 
-def eight_fips_trials():
-    """Two trials per apparent-tilt / frame-start-position combination."""
+def six_fips_trials():
+    """Three upper-first trials per FIPS tilt."""
     trials = []
     for induced_percept in ("left", "right"):
-        for frame_start in ("left", "right"):
-            # A frame starting on the left first moves right, and vice versa.
-            direction = "right" if frame_start == "left" else "left"
-            initial_position = next(
-                pos for pos in ("upper", "lower")
-                if source_initial_direction(pos, induced_percept) == direction
-            )
-            for _ in range(2):
-                trials.append({
-                    "ExpCondition": cfg.COND_FIPS,
-                    "InitialPosition": initial_position,
-                    "InducedPercept": induced_percept,
-                    "InitialDirection": direction,
-                    "FrameStartPosition": frame_start,
-                    "FIPSCategory": f"{induced_percept}_tilt_frame_starts_{frame_start}",
-                })
+        direction = source_initial_direction(induced_percept)
+        frame_start = "left" if direction == "right" else "right"
+        for _ in range(3):
+            trials.append({
+                "ExpCondition": cfg.COND_FIPS,
+                "InitialPosition": "upper",
+                "InducedPercept": induced_percept,
+                "InitialDirection": direction,
+                "FrameStartPosition": frame_start,
+                "FIPSCategory": f"{induced_percept}_tilt_frame_starts_{frame_start}",
+            })
     return trials
 
 
-def eight_perceptual_trials():
-    """Four trials per tilt, with two upper-first and two lower-first each."""
+def six_perceptual_trials():
+    """Three upper-first trials per physical tilt."""
     return [
         {
             "ExpCondition": cfg.COND_PERCEPTUAL,
-            "InitialPosition": position,
+            "InitialPosition": "upper",
             "InducedPercept": tilt,
             "InitialDirection": "NA",
         }
         for tilt in ("left", "right")
-        for position in ("upper", "lower")
-        for _ in range(2)
+        for _ in range(3)
     ]
 
 
-def four_veridical_trials():
+def three_veridical_trials():
     return [
         {
             "ExpCondition": cfg.COND_VERIDICAL,
-            "InitialPosition": pos,
+            "InitialPosition": "upper",
             "InducedPercept": "none",
             "InitialDirection": "NA",
         }
-        for pos in ["upper", "lower", "upper", "lower"]
+        for _ in range(3)
     ]
 
 
-def eight_frame_only_trials():
-    # Four trials start on each side, moving toward the opposite side.
+def six_frame_only_trials():
     return [
         {
             "ExpCondition": cfg.COND_FRAME_ONLY,
@@ -657,40 +626,33 @@ def eight_frame_only_trials():
             "InitialDirection": direction,
             "FrameStartPosition": "left" if direction == "right" else "right",
         }
-        for direction in ["left", "right"] * 4
+        for direction in ["left", "right"] * 3
     ]
 
 
 def build_scan_trials(run_number):
-    """28 trials: 8 FIPS, 4 Veridical, 8 Perceptual, and 8 FrameOnly.
-
-    Three randomized mini-blocks contain 3, 3, and 2 FIPS trials,
-    respectively, plus 3/3/2 Perceptual, 2/1/1 Veridical, and 3/3/2 FrameOnly.
-    """
-    fips = np.random.permutation(eight_fips_trials()).tolist()
-    perceptual = np.random.permutation(eight_perceptual_trials()).tolist()
-    veridical = four_veridical_trials()
-    frame_only = np.random.permutation(eight_frame_only_trials()).tolist()
+    """Three randomized mini-blocks, each with one trial per analysis condition."""
+    fips = six_fips_trials()
+    perceptual = six_perceptual_trials()
+    veridical = three_veridical_trials()
+    frame_only = six_frame_only_trials()
 
     all_trials = []
 
-    fips_start = 0
-    veridical_start = 0
-    for block, fips_count in enumerate((3, 3, 2), start=1):
-        veridical_count = (2, 1, 1)[block - 1]
-        block_trials = (
-            fips[fips_start:fips_start + fips_count]
-            + veridical[veridical_start:veridical_start + veridical_count]
-            + perceptual[fips_start:fips_start + fips_count]
-            + frame_only[fips_start:fips_start + fips_count]
-        )
-
-        veridical_start += veridical_count
-        fips_start += fips_count
+    for block_index in range(3):
+        block_trials = [
+            fips[block_index],
+            fips[block_index + 3],
+            perceptual[block_index],
+            perceptual[block_index + 3],
+            veridical[block_index],
+            frame_only[2 * block_index],
+            frame_only[2 * block_index + 1],
+        ]
         block_trials = np.random.permutation(block_trials).tolist()
 
         for t in block_trials:
-            t["Block"] = block
+            t["Block"] = block_index + 1
 
         all_trials.extend(copy.deepcopy(block_trials))
 
@@ -704,13 +666,17 @@ def build_scan_trials(run_number):
 def build_prescan_trials():
     factor_prescan = {
         "ExpCondition": [cfg.COND_FIPS],
-        "InitialPosition": ["upper", "lower"],
+        "InitialPosition": ["upper"],
         "InducedPercept": ["left", "right"],
     }
 
     cond_list = data.createFactorialTrialList(factor_prescan)
     n_reps = max(round(exp["n_trials"] // len(cond_list)), 1)
-    trials = cond_list * n_reps
+    trials = [
+        copy.deepcopy(trial)
+        for trial in cond_list
+        for _ in range(n_reps)
+    ]
     trials = np.random.permutation(trials).tolist()
     trials = trials[: exp["n_trials"]]
 
@@ -719,7 +685,6 @@ def build_prescan_trials():
         trial["Run"] = int(expInfo["run"])
         trial["Trial"] = idx
         trial["InitialDirection"] = source_initial_direction(
-            trial["InitialPosition"],
             trial["InducedPercept"],
         )
 
@@ -736,12 +701,8 @@ if CODE_TEST:
     for idx, trial in enumerate(TRIALS, start=1):
         trial["Trial"] = idx
 
-pd.DataFrame(TRIALS).to_csv(trialsName, index=False)
 
-
-# ===========================================================================
 # ONE-HEMIFIELD STIMULUS CONFIGURATION
-# ===========================================================================
 
 side_sign = 1 if cfg.HEMIFIELD == "right" else -1
 
@@ -757,7 +718,7 @@ STIM_POS_DVA = [
 stim_config = {
     "backColor": cfg.BACK_COLOR,
     "session": expInfo["ses"],
-    # pRF uses integer pixel offsets from display center.
+    # pRF fixation offsets are rounded to integer pixels.
     "fix_pos": (np.round(np.array(deg2pix(FIX_POS_DVA)) / render_scale) * render_scale).tolist(),
     "fix_diameter_px": cfg.FIXATION_DIAMETER_PX * render_scale,
     "fix_alpha": cfg.FIXATION_ALPHA,
@@ -821,13 +782,9 @@ expWin.refreshThreshold = (
 expWin.units = "pix"
 
 
-# ===========================================================================
 # GENERATE FIXATION
-# ===========================================================================
 
-# Exact Kay runretinotopy fixation dimensions:
-# fixationsize = 4 pixels, and ptviewmovie defines scalar fixationsize
-# as the fixation-dot diameter with no border.
+# pRF fixation is a 4-pixel disc without a border.
 fix_outer = visual.Circle(
     win=expWin,
     radius=stim_config["fix_diameter_px"] / 2.0,
@@ -839,8 +796,7 @@ fix_outer = visual.Circle(
     autoLog=False,
 )
 
-# Invisible placeholder retained only so the surrounding fips_stim.py-style
-# infrastructure can keep using fix_inner.autoDraw without a broad refactor.
+# Invisible inner fixation placeholder.
 fix_inner = visual.Circle(
     win=expWin,
     radius=0,
@@ -853,9 +809,7 @@ fix_inner = visual.Circle(
 )
 
 
-# ===========================================================================
 # GENERATE DOTS / MARKERS
-# ===========================================================================
 
 dot_positions = [
     [
@@ -927,10 +881,7 @@ def make_checker_dot(win, pos, radius):
             pos=pos,
             autoLog=False,
 
-            # PsychoPy 2026.2.4 compatibility:
-            # visual.Pie still forwards legacy color parameters internally.
-            # Supplying the undefined sentinel prevents those deprecated
-            # parameters from overriding the explicit colorSpace below.
+            # The undefined sentinel prevents legacy Pie colors overriding colorSpace.
             colorSpace="rgb",
             color=undefined,
             fillColorSpace=undefined,
@@ -956,9 +907,7 @@ if FLASH_GRAB:
     ]
 
 
-# ===========================================================================
 # FRAME
-# ===========================================================================
 
 frame_outer = visual.Rect(
     win=expWin,
@@ -985,9 +934,7 @@ frame_inner = visual.Rect(
 )
 
 
-# ===========================================================================
 # INSTRUCTIONS
-# ===========================================================================
 
 task_text = (
     "Please keep your eyes on the fixation dot.\n\n"
@@ -1005,9 +952,7 @@ end_end_text = (
 )
 
 
-# ===========================================================================
 # STIMULUS HELPERS
-# ===========================================================================
 
 def draw_dot(dot, draw_or_not=True):
     if FLASH_GRAB:
@@ -1032,8 +977,9 @@ def color_dot(dot, color):
             pie.fillColor = c
             pie.lineColor = c
     else:
-        dot.fillColor = color
-        dot.lineColor = color
+        solid_color = "white" if expInfo["stimulus"] == "plain" else color
+        dot.fillColor = solid_color
+        dot.lineColor = solid_color
 
 
 def update_dots(pair="upper", color="white", sets=None):
@@ -1061,7 +1007,6 @@ def hide_all_dots(sets=None):
 def update_dots_by_clock(
     time_elapsed,
     dot_color,
-    dot_pos,
     dot_counter=0,
 ):
     n_one_way, time_left = divmod(
@@ -1069,29 +1014,18 @@ def update_dots_by_clock(
         stim_config["duration_one_way"],
     )
 
+    is_lower = int(n_one_way) % 2 == 1
+    current_pos = "lower" if is_lower else "upper"
     current_color = dot_color
-    current_pos = dot_pos
 
     if time_left > exp["reversal_time"]:
-        if int(n_one_way) % 2 == 1:
-            if expInfo["stimulus"] == "old":
-                current_color = (
-                    "black" if dot_color == "white" else "white"
-                )
-
-            current_pos = (
-                "upper" if dot_pos == "lower" else "lower"
-            )
-
+        if is_lower:
             current_color = (
                 "black" if dot_color == "white" else "white"
             )
-
         if FLASH_GRAB:
             dot_counter += 1
-
         update_dots(current_pos, current_color)
-
     else:
         hide_all_dots()
 
@@ -1135,9 +1069,7 @@ def update_markers_by_clock(
 
 
 def move_dots(distance):
-    """
-    Same opposite-horizontal-offset convention as the source experiment.
-    """
+    """Apply opposite horizontal offsets to the upper and lower probes."""
     pos_list = [
         [
             stim_config["stim_pos"][0] - distance,
@@ -1182,9 +1114,7 @@ def shift_frames_by_clock(
     time_elapsed,
     frame_default_pos,
 ):
-    """
-    Clock-based triangular frame movement copied from the source logic.
-    """
+    """Move the frame along a triangular trajectory with endpoint pauses."""
     one_way_duration = (
         exp["reversal_time"] + exp["dot_duration"]
     )
@@ -1213,9 +1143,7 @@ def shift_frames_by_clock(
     frame_inner.pos = frame_outer.pos
 
 
-# ===========================================================================
 # EYELINK / SCREEN HELPERS
-# ===========================================================================
 
 def clear_screen(win):
     event.clearEvents()
@@ -1268,25 +1196,7 @@ def abort_trial():
 
 
 def terminate_task():
-    """
-    Gracefully stop tracking, preserve fixation-task data, close the EDF,
-    transfer it, then quit.
-    """
-    # Preserve attention-task data even on an aborted run.
-    # The globals check keeps this safe if termination happens before
-    # the scan fixation task has been initialized.
-    if (
-        "fixation_task" in globals()
-        and fixation_task is not None
-        and "close_fixation_task_log" in globals()
-    ):
-        try:
-            close_fixation_task_log()
-        except Exception as err:
-            print(
-                "WARNING: could not finalize fixation-task log:",
-                err,
-            )
+    """Save attention data and transfer the EDF before quitting."""
 
     if el_tracker.isConnected():
         error = el_tracker.isRecording()
@@ -1330,49 +1240,100 @@ def log_with_time():
     logFile.write(f"[{timestamp}] ")
 
 
-# ===========================================================================
 # KAY RETINOTOPY FIXATION-COLOR ATTENTION TASK
-# ===========================================================================
 
 fixation_task = None
-fixation_task_csv_handle = None
-fixation_task_csv_writer = None
 
-FIXATION_TASK_FIELDS = [
-    "event_type",
-    "run_time_s",
-    "scheduled_time_s",
-    "color",
-    "key",
-]
+def _build_fixation_block_schedule(start_run_s=0.0):
+    """Schedule one fixation change in approximately half of all scan blocks."""
+    blocks = []
+    run_s = float(start_run_s)
 
+    def add_block(block_type, duration_s, trial_number=""):
+        nonlocal run_s
+        duration_s = float(duration_s)
 
-def _matlab_round_positive(x):
-    """Equivalent to MATLAB round() for the positive values used here."""
-    return int(np.floor(float(x) + 0.5))
+        if duration_s <= 0:
+            raise ValueError(
+                f"Nonpositive duration for {block_type}: {duration_s}"
+            )
 
+        blocks.append({
+            "block_number": len(blocks) + 1,
+            "block_type": block_type,
+            "trial_number": trial_number,
+            "start_run_s": run_s,
+            "end_run_s": run_s + duration_s,
+            "has_color_change": False,
+            "scheduled_time_s": "",
+        })
 
-def _sample_kay_fixation_interval_s():
-    """
-    Reproduce the source rule:
+        run_s += duration_s
 
-        soafun = @() round(
-            meanchange*(60/frameduration)
-            + changeplusminus*(2*(rand-.5))*(60/frameduration)
+    # Construct the full run as individual blocks.
+    add_block("pre_baseline", exp["pre_run_baseline"])
+
+    for index, trial in enumerate(TRIALS):
+        add_block(
+            "trial",
+            stim_config["duration_stimulus"],
+            trial["Trial"],
         )
 
-    with frameduration=4, meanchange=3, changeplusminus=2.
-    """
-    hz = cfg.FIXATION_TASK_HZ
+        if index < len(TRIALS) - 1:
+            add_block("ITI", exp["ITI"], trial["Trial"])
 
-    interval_frames = _matlab_round_positive(
-        cfg.FIXATION_CHANGE_MEAN_S * hz
-        + cfg.FIXATION_CHANGE_PLUS_MINUS_S
-        * (2.0 * (np.random.rand() - 0.5))
-        * hz
+    add_block("post_baseline", exp["post_run_baseline"])
+
+    # Randomly select approximately half of all blocks.
+    fraction = float(cfg.FIXATION_BLOCK_CHANGE_FRACTION)
+
+    if not 0 <= fraction <= 1:
+        raise ValueError(
+            "FIXATION_BLOCK_CHANGE_FRACTION must be between 0 and 1"
+        )
+
+    n_selected = int(np.floor(len(blocks) * fraction + 0.5))
+
+    selected_indices = set(
+        np.random.choice(
+            len(blocks),
+            size=n_selected,
+            replace=False,
+        ).tolist()
     )
 
-    return max(interval_frames, 1) / hz
+    # Randomize one change time within each selected block.
+    hz = float(cfg.FIXATION_TASK_HZ)
+    margin_s = float(cfg.FIXATION_CHANGE_EDGE_MARGIN_S)
+
+    if hz <= 0 or margin_s < 0:
+        raise ValueError(
+            "Fixation task Hz must be positive and margin nonnegative"
+        )
+
+    for index, block in enumerate(blocks):
+        if index not in selected_indices:
+            continue
+
+        first_frame = int(
+            np.ceil((block["start_run_s"] + margin_s) * hz - 1e-8)
+        )
+        last_frame = int(
+            np.floor((block["end_run_s"] - margin_s) * hz + 1e-8)
+        )
+
+        if first_frame > last_frame:
+            raise ValueError(
+                f"Block {block['block_number']} is too short for the margin"
+            )
+
+        block["has_color_change"] = True
+        block["scheduled_time_s"] = (
+            int(np.random.randint(first_frame, last_frame + 1)) / hz
+        )
+
+    return blocks
 
 
 def _set_fixation_color(index):
@@ -1381,71 +1342,30 @@ def _set_fixation_color(index):
     fix_outer.lineColor = color
 
 
-def _open_fixation_task_log():
-    """
-    Create the fixation-task CSV immediately at run start.
-
-    The file stays open during the run. Each event is appended and flushed
-    immediately, so stopping the run midway does not discard earlier
-    attention-task events.
-    """
-    global fixation_task_csv_handle
-    global fixation_task_csv_writer
-
-    # Close a stale handle first, if one somehow exists.
-    if fixation_task_csv_handle is not None:
-        try:
-            fixation_task_csv_handle.flush()
-            fixation_task_csv_handle.close()
-        except Exception:
-            pass
-
-    fixation_task_csv_handle = open(
-        fixationTaskName,
-        "w",
-        newline="",
-        encoding="utf-8",
-    )
-
-    fixation_task_csv_writer = csv.DictWriter(
-        fixation_task_csv_handle,
-        fieldnames=FIXATION_TASK_FIELDS,
-    )
-    fixation_task_csv_writer.writeheader()
-    fixation_task_csv_handle.flush()
-
-
 def _record_fixation_event(event):
-    """
-    Store one fixation-task event in memory AND append it to disk immediately.
-    """
-    if fixation_task is None:
-        return
-
-    fixation_task["event_log"].append(event)
-
-    if fixation_task_csv_writer is not None:
-        fixation_task_csv_writer.writerow(event)
-        fixation_task_csv_handle.flush()
-
+    if fixation_task is not None:
+        fixation_task["event_log"].append(event)
 
 def start_fixation_task(start_run_s=0.0):
-    """
-    Kay's implementation starts with the first fixation color: red.
-    """
+    """Start red fixation and randomize the entire scan's block schedule."""
     global fixation_task
 
     _set_fixation_color(0)
 
+    blocks = _build_fixation_block_schedule(start_run_s)
+
+    change_schedule = [
+        block for block in blocks
+        if block["has_color_change"]
+    ]
+
     fixation_task = {
         "current_color_index": 0,
-        "next_change_run_s": start_run_s + _sample_kay_fixation_interval_s(),
+        "change_schedule": change_schedule,
+        "next_change_index": 0,
         "change_count": 0,
         "event_log": [],
     }
-
-    # Create the CSV right now, before the first baseline begins.
-    _open_fixation_task_log()
 
     _record_fixation_event(
         {
@@ -1459,41 +1379,61 @@ def start_fixation_task(start_run_s=0.0):
 
 
 def update_fixation_task(run_time_s):
-    """
-    When a change is due, pick randomly from the OTHER two colors.
-    This preserves the source behavior: every event is a real color change.
-    """
+    """Apply each selected block's single scheduled color change."""
     if fixation_task is None:
         return
 
-    while run_time_s >= fixation_task["next_change_run_s"]:
+    schedule = fixation_task["change_schedule"]
+
+    while fixation_task["next_change_index"] < len(schedule):
+        block = schedule[fixation_task["next_change_index"]]
+        scheduled = block["scheduled_time_s"]
+
+        if run_time_s < scheduled:
+            break
+
+        fixation_task["next_change_index"] += 1
+
+        # Never carry a missed color change into a later block.
+        if run_time_s >= block["end_run_s"]:
+            _record_fixation_event({
+                "event_type": "missed_color_change",
+                "run_time_s": float(run_time_s),
+                "scheduled_time_s": float(scheduled),
+                "color": cfg.FIXATION_COLOR_NAMES[
+                    fixation_task["current_color_index"]
+                ],
+                "key": "",
+            })
+
+            logFile.write(
+                f"WARNING: missed fixation change in block "
+                f"{block['block_number']} ({block['block_type']})\n"
+            )
+            continue
+
+        # Select a color different from the current color.
         current = fixation_task["current_color_index"]
+
         available = [
-            idx
-            for idx in range(len(cfg.FIXATION_COLORS_RGB255))
+            idx for idx in range(len(cfg.FIXATION_COLORS_RGB255))
             if idx != current
         ]
 
-        new_index = int(np.random.permutation(available)[0])
-        scheduled = fixation_task["next_change_run_s"]
+        new_index = int(np.random.choice(available))
 
         fixation_task["current_color_index"] = new_index
         fixation_task["change_count"] += 1
-        fixation_task["next_change_run_s"] = (
-            scheduled + _sample_kay_fixation_interval_s()
-        )
 
         _set_fixation_color(new_index)
 
-        _record_fixation_event(
-            {
-                "event_type": "color_change",
-                "run_time_s": float(run_time_s),
-                "scheduled_time_s": float(scheduled),
-                "color": cfg.FIXATION_COLOR_NAMES[new_index],
-                "key": "",
-            }
-        )
+        _record_fixation_event({
+            "event_type": "color_change",
+            "run_time_s": float(run_time_s),
+            "scheduled_time_s": float(scheduled),
+            "color": cfg.FIXATION_COLOR_NAMES[new_index],
+            "key": "",
+        })
 
         el_tracker.sendMessage(
             f"FIXATION_COLOR_CHANGE "
@@ -1503,11 +1443,7 @@ def update_fixation_task(run_time_s):
 
 
 def collect_fixation_task_keys():
-    """
-    Log button presses. The original public runretinotopy instructions do not
-    specify one particular response key, only that a button be pressed when
-    the fixation color changes.
-    """
+    """Log fixation-task responses and return whether escape was pressed."""
     if fixation_task is None:
         return False
 
@@ -1539,58 +1475,109 @@ def collect_fixation_task_keys():
 
     return escaped
 
+def bids_trial_type(trial):
+    """Identify all seven scan conditions."""
+    condition = trial["ExpCondition"]
 
-def save_fixation_task_log():
-    """
-    Flush the already-incremental attention log to disk.
+    if condition == cfg.COND_VERIDICAL:
+        return "veridical"
+    if condition == cfg.COND_FIPS:
+        return f"fips_{trial['InducedPercept']}"
+    if condition == cfg.COND_PERCEPTUAL:
+        return f"perceptual_{trial['InducedPercept']}"
+    if condition == cfg.COND_FRAME_ONLY:
+        return f"frame_only_starts_{trial['FrameStartPosition']}"
 
-    Kept as a named function because the rest of the experiment already calls
-    it at the normal end of a run.
-    """
-    if fixation_task_csv_handle is not None:
-        fixation_task_csv_handle.flush()
+    raise ValueError(f"Unknown scan condition: {condition!r}")
+
+
+def save_bids_events(run_end_s):
+    """Write one events.tsv row per trial, ITI, and baseline."""
+    if BIDS_EVENTS_NAME is None or not dataFile or fixation_task is None:
         return
 
-    # Fallback only: if there is task data but no open writer, materialize it.
-    if fixation_task is not None:
-        pd.DataFrame(
-            fixation_task["event_log"],
-            columns=FIXATION_TASK_FIELDS,
-        ).to_csv(
-            fixationTaskName,
-            index=False,
-        )
+    events = fixation_task["event_log"]
 
+    # Actual displayed changes, not merely scheduled changes.
+    changes = [
+        float(e["run_time_s"]) for e in events
+        if e["event_type"] == "color_change"
+    ]
+    presses = [
+        float(e["run_time_s"]) for e in events
+        if e["event_type"] == "button_press"
+    ]
 
-def close_fixation_task_log():
-    """
-    Flush and close the fixation-task CSV safely.
-    """
-    global fixation_task_csv_handle
-    global fixation_task_csv_writer
+    response_window = float(cfg.FIXATION_RESPONSE_WINDOW_S)
+    if response_window <= 0:
+        raise ValueError("FIXATION_RESPONSE_WINDOW_S must be positive")
 
-    if fixation_task_csv_handle is not None:
-        fixation_task_csv_handle.flush()
-        fixation_task_csv_handle.close()
+    rows = []
 
-    fixation_task_csv_handle = None
-    fixation_task_csv_writer = None
+    def add_row(start, end, kind):
+        start, end = float(start), float(end)
+
+        if end < start:
+            raise ValueError(f"Negative {kind} duration: {start} to {end}")
+
+        block_changes = [t for t in changes if start <= t < end]
+
+        if block_changes:
+            correct = all(
+                any(
+                    t <= p <= min(t + response_window, end)
+                    for p in presses
+                )
+                for t in block_changes
+            )
+            accuracy = "true" if correct else "false"
+        else:
+            accuracy = "n/a"
+
+        rows.append({
+            "onset": round(start, 6),
+            "duration": round(end - start, 6),
+            "trial_type": kind,
+            "fixation_change": "true" if block_changes else "false",
+            "accuracy": accuracy,
+        })
+
+    first = dataFile[0]
+    add_row(0.0, first["stim_onset_run_s"], "baseline")
+
+    for index, trial in enumerate(dataFile):
+        onset = trial["stim_onset_run_s"]
+        offset = trial["stim_offset_run_s"]
+
+        add_row(onset, offset, bids_trial_type(trial))
+
+        if index + 1 < len(dataFile):
+            next_onset = dataFile[index + 1]["stim_onset_run_s"]
+            add_row(offset, next_onset, "iti")
+
+    add_row(
+        dataFile[-1]["stim_offset_run_s"],
+        run_end_s,
+        "baseline"
+    )
+
+    pd.DataFrame(rows, columns=[
+        "onset", "duration", "trial_type",
+        "fixation_change", "accuracy"
+    ]).to_csv(
+        BIDS_EVENTS_NAME,
+        sep="\t",
+        index=False,
+        na_rep="n/a"
+    )
+
+    logFile.write(
+        f"Saved {len(rows)} BIDS events: {BIDS_EVENTS_NAME}\n"
+    )
 
 
 def prepare_fixation_only_screen():
-    """
-    Force a true fixation-only display.
-
-    Baselines and ITIs must contain:
-        - fixation dot
-        - background
-
-    They must NOT contain:
-        - moving/static frame
-        - FIPS probes
-        - perceptual/veridical probes
-        - prescan markers
-    """
+    """Hide the frame, probes, and comparison markers."""
     hide_all_dots(dots)
     hide_all_dots(markers)
 
@@ -1602,10 +1589,7 @@ def prepare_fixation_only_screen():
 
 
 def run_fixation_until(target_run_s):
-    """
-    Keep the fixation-color task running during pre-run baseline, ITIs,
-    and post-run baseline, while guaranteeing that only fixation is visible.
-    """
+    """Run the fixation-color task until the scheduled time."""
     prepare_fixation_only_screen()
 
     while exp_clock.getTime() < target_run_s:
@@ -1623,9 +1607,7 @@ def check_fixation(
     fix_radius_dva=None,
     eye_used=None,
 ):
-    """
-    Optional EyeLink fixation gate retained from the source experiment.
-    """
+    """Require continuous gaze within the rectangular fixation gate."""
     if fix_duration is None:
         fix_duration = cfg.FIXATION_GATE_DURATION_S
     if fix_radius_dva is None:
@@ -1673,7 +1655,7 @@ def check_fixation(
         gx_centered = g_x - scn_width / 2
         gy_centered = (g_y - scn_height / 2) * -1
 
-        # Preserve the source rectangular gate.
+        # Fixation uses a rectangular acceptance region.
         inside = (
             abs(gx_centered - fix_x) < fixation_radius_px
             and abs(gy_centered - fix_y) < fixation_radius_px
@@ -1703,26 +1685,14 @@ def check_fixation(
     fix_outer.lineColor = cfg.FIXATION_COLORS_RGB255[0]
 
 
-# ===========================================================================
 # SCAN TRIAL
-# ===========================================================================
 
 def show_stimulus(
     trial,
     when_to_flip,
     add_iti_after=True,
 ):
-    """
-    Run one 8-s scanner trial.
-
-    The only condition-specific changes are stimulus visibility/position:
-        FIPS       -> moving frame + aligned probes
-        Veridical  -> no frame + aligned probes
-        Perceptual -> no frame + physically displaced probes
-        FrameOnly  -> moving frame + no probes
-
-    EyeLink, timing, responses, logging, and the scanner schedule stay shared.
-    """
+    """Present one scan trial and optionally its fixation-only ITI."""
 
     trial_type = trial["ExpCondition"]
     dir_map = {"left": -1, "right": 1, "NA": 0}
@@ -1798,9 +1768,6 @@ def show_stimulus(
     ):
         check_fixation()
 
-    # Keep the Kay fixation task active during the pre-run baseline / ITI.
-    # run_fixation_until() intentionally disables the frame and probes so the
-    # baseline/ITI is fixation-only.
     if expInfo["ses"] == "scan":
         run_fixation_until(when_to_flip)
     else:
@@ -1808,10 +1775,7 @@ def show_stimulus(
         if wait_duration > 0:
             core.wait(wait_duration)
 
-    # IMPORTANT: the fixation-only wait above turns the frame off. Restore
-    # the condition-specific frame state immediately before the stimulus
-    # begins. Without this, FIPS and FrameOnly trials have frame positions
-    # updated in memory but the frame is never actually drawn.
+    # Restore the frame after the fixation-only wait disables it.
     if frame_present:
         frame_outer.pos = frame_default_pos
         frame_inner.pos = frame_default_pos
@@ -1870,21 +1834,17 @@ def show_stimulus(
     while trial_clock.getTime() < stim_config["duration_stimulus"]:
         time_elapsed = trial_clock.getTime()
 
-        # Kay fixation-color task runs continuously during stimulus presentation.
         update_fixation_task(exp_clock.getTime())
 
-        # Probe update.
         if probes_present:
             _, dot_counter = update_dots_by_clock(
                 time_elapsed,
                 dot_color,
-                dot_pos,
                 dot_counter,
             )
         else:
             hide_all_dots()
 
-        # Frame update.
         if frame_present:
             shift_frames_by_clock(
                 dir_factor,
@@ -1892,7 +1852,6 @@ def show_stimulus(
                 frame_default_pos,
             )
 
-        # Mark first visual frame in EDF.
         if not onset_sent:
             expWin.callOnFlip(
                 el_tracker.sendMessage,
@@ -1905,18 +1864,13 @@ def show_stimulus(
             trial["stim_onset_run_s"] = exp_clock.getTime()
             onset_sent = True
 
-        # Kay fixation-color attention response.
         if collect_fixation_task_keys():
             terminate_task()
 
-    event.clearEvents()
-
-    # End every trial on a guaranteed fixation-only screen.
     prepare_fixation_only_screen()
 
     expWin.recordFrameIntervals = False
 
-    # This flip begins the fixation-only ITI.
     expWin.flip()
 
     trial["stim_offset_run_s"] = exp_clock.getTime()
@@ -1936,20 +1890,10 @@ def show_stimulus(
     return trial, next_onset
 
 
-# ===========================================================================
 # PRESCAN MATCHING
-# ===========================================================================
 
 def test_stimulus(trial):
-    """
-    Prescan psychophysical matching, retained from the source design.
-
-    The display alternates between:
-        FIPS stimulus
-        adjustable real-displacement comparison
-
-    The participant adjusts the comparison separation and accepts it.
-    """
+    """Alternate FIPS and adjustable physical-displacement comparison until accepted."""
     trial_type = cfg.COND_FIPS
 
     dir_map = {"left": -1, "right": 1}
@@ -1970,6 +1914,19 @@ def test_stimulus(trial):
     el_tracker.sendMessage(f"TRIALID {nt_label}")
     el_tracker.sendCommand(
         f"record_status_message 'TRIAL number {nt_label}'"
+    )
+
+    el_tracker.sendMessage(
+        f"!V TRIAL_VAR condition {trial['ExpCondition']}"
+    )
+    el_tracker.sendMessage(
+        f"!V TRIAL_VAR induced_percept {trial['InducedPercept']}"
+    )
+    el_tracker.sendMessage(
+        f"!V TRIAL_VAR initial_position {trial['InitialPosition']}"
+    )
+    el_tracker.sendMessage(
+        f"!V TRIAL_VAR initial_direction {trial['InitialDirection']}"
     )
 
     log_with_time()
@@ -2024,7 +1981,6 @@ def test_stimulus(trial):
                 dot_color, dot_counter = update_dots_by_clock(
                     time_elapsed,
                     dot_color,
-                    dot_pos,
                     dot_counter,
                 )
 
@@ -2116,9 +2072,7 @@ def test_stimulus(trial):
     return trial
 
 
-# ===========================================================================
 # RUN
-# ===========================================================================
 
 if expInfo["ses"] == "scan":
     if use_fake_prescan:
@@ -2140,9 +2094,7 @@ if expInfo["ses"] == "scan":
     show_msg(expWin, task_text, True)
 
 
-# ---------------------------------------------------------------------------
 # EyeLink calibration
-# ---------------------------------------------------------------------------
 
 if EYELINK_CONNECTED:
     eyelink_msg = (
@@ -2167,9 +2119,7 @@ else:
     show_msg(expWin, eyelink_msg)
 
 
-# ---------------------------------------------------------------------------
 # Scanner trigger
-# ---------------------------------------------------------------------------
 
 show_msg(
     expWin,
@@ -2195,20 +2145,17 @@ logFile.write(
 
 dataFile = []
 
-# The run begins with a true fixation-only baseline.
 prepare_fixation_only_screen()
 
 expWin.color = stim_config["backColor"]
 expWin.flip(clearBuffer=True)
 
-# Record eye position for the entire run, including baseline.
 el_tracker.startRecording(1, 1, 1, 1)
 el_tracker.sendMessage("RUN_START")
 
 if expInfo["ses"] == "scan":
     start_fixation_task(start_run_s=0.0)
 
-# First stimulus onset is 15 s after scanner trigger in the scan session.
 when_to_flip = exp["pre_run_baseline"]
 
 logFile.write(
@@ -2217,9 +2164,7 @@ logFile.write(
 )
 
 
-# ---------------------------------------------------------------------------
 # Trial loop
-# ---------------------------------------------------------------------------
 
 for trial_index, trial in enumerate(TRIALS):
     tt_start = exp_clock.getTime()
@@ -2245,15 +2190,21 @@ for trial_index, trial in enumerate(TRIALS):
 
     executed_trial = trial.copy()
     dataFile.append(executed_trial)
-    pd.DataFrame(dataFile).to_csv(
-        dataName,
-        index=False,
-    )
 
+    if expInfo["ses"] == "prescan":
+        prescan_progress = pd.DataFrame(dataFile)
 
-# ---------------------------------------------------------------------------
+        # Summary values remain blank until all trials finish.
+        prescan_progress.insert(0, "avg", "")
+        prescan_progress.insert(0, "right", "")
+        prescan_progress.insert(0, "left", "")
+
+        prescan_progress.to_csv(
+            predataName,
+            index=False,
+        )
+
 # Post-run baseline
-# ---------------------------------------------------------------------------
 
 if expInfo["ses"] == "scan":
     post_baseline_end = (
@@ -2261,7 +2212,7 @@ if expInfo["ses"] == "scan":
     )
 
     run_fixation_until(post_baseline_end)
-    close_fixation_task_log()
+    save_bids_events(run_end_s=exp_clock.getTime())
 
     el_tracker.sendMessage("RUN_END")
 
@@ -2269,21 +2220,17 @@ if expInfo["ses"] == "scan":
         f"Post-run fixation baseline = "
         f"{exp['post_run_baseline']:.3f} s\n"
     )
+else:
+    el_tracker.sendMessage("RUN_END")
 
 
-# ===========================================================================
 # WRAP UP
-# ===========================================================================
 
 t_end = exp_clock.getTime()
 exp_duration = t_end - t_start
 
 logFile.write(
     f"The experiment took {exp_duration:.3f} seconds\n"
-)
-
-expWin.saveFrameIntervals(
-    fileName=str(framesName)
 )
 
 if expInfo["ses"] == "scan":
@@ -2313,15 +2260,12 @@ elif expInfo["ses"] == "prescan":
     )
     avg_abs = (left_mean + right_mean) / 2
 
-    prescan_summary = pd.DataFrame(
-        [
-            {
-                "left": left_mean,
-                "right": right_mean,
-                "avg": avg_abs,
-            }
-        ]
-    )
+    # Preserve all individual responses alongside the summary values.
+    prescan_summary = prescan_df.copy()
+
+    prescan_summary.insert(0, "avg", avg_abs)
+    prescan_summary.insert(0, "right", right_mean)
+    prescan_summary.insert(0, "left", left_mean)
 
     prescan_summary.to_csv(
         predataName,
@@ -2341,7 +2285,6 @@ elif expInfo["ses"] == "prescan":
     )
 
 
-# Stop recording, transfer EDF, and quit.
 if el_tracker.isRecording():
     pylink.pumpDelay(100)
     el_tracker.stopRecording()

@@ -1,52 +1,21 @@
-"""
-Configuration for fips_one_hemi.py
+"""One-hemifield FIPS settings.
 
-This file contains the experiment values that should be changed without
-editing the main PsychoPy experiment code.
+Scan: 21 trials in 3 balanced mini-blocks; 10 s stimuli, 8 s between-trial
+ITIs, and 12 s pre/post baselines. Each run lasts 394 s (197 TRs at 2 s).
+Perceptual displacements come from the participant’s prescan summary."""
 
-The main script intentionally stays close to:
-    WENTAOSI/fipsPRF/exp/code/fips_stim.py
-
-Keep this file in the SAME directory as:
-    fips_one_hemi.py
-    EyeLinkCoreGraphicsPsychoPy.py
-
-The defaults below implement the current one-hemifield thesis design:
-    - 10 scanner runs
-    - 28 trials/run
-    - 4 conditions: 8 FIPS, 4 Veridical, 8 Perceptual, 8 FrameOnly trials/run
-    - 3 mini-blocks/run: 3/3/2 FIPS, 2/1/1 Veridical, 3/3/2 Perceptual, 3/3/2 FrameOnly
-    - 8 s stimulus
-    - 6 s fixation-only ITI between trials
-    - 15 s fixation-only baseline at run start and run end
-    - total = 416 s = 6:56/run
-
-The participant-specific perceptual-match displacement is NOT hard-coded here.
-The main script loads it automatically from the prescan summary CSV, matching
-the behavior of the original fips_stim.py.
-"""
-
-# ===========================================================================
 # DEBUG / TASK
-# ===========================================================================
 
 CODE_TEST = False
 DEBUG_ON_VSCODE = False
 
 TASK = "FIPS"
 
-# ===========================================================================
 # PREVIEW / DIMENSION TESTING
-# ===========================================================================
-#
-# Set True ONLY when testing stimulus geometry/timing without a participant
-# prescan. Never use this for real data collection.
+# Preview mode uses test displacements; disable for data collection.
 PREVIEW_MODE = False
 
-# Fake displacement values used for laptop/dummy scan testing.
-# A "dummy scan" is a scan session with "Eyelink Connected: no".
-# These values are NEVER used when Eyelink Connected is "yes" unless
-# PREVIEW_MODE is explicitly turned on.
+# Test displacements for preview mode or scans without EyeLink.
 DUMMY_SCAN_USE_FAKE_PRESCAN = True
 PREVIEW_PRESCAN_LEFT_DVA = 0.75
 PREVIEW_PRESCAN_RIGHT_DVA = 0.75
@@ -56,12 +25,14 @@ DEFAULT_SUB_ID = "99"
 DEFAULT_SUB_NAME = "PT"
 DEFAULT_RUN = "1"
 
-# Path relative to the directory containing fips_one_hemi.py.
+# Relative to fips_one_hemi.py.
 DATA_DIR = "../data/psycphys"
 
-# ===========================================================================
+# BIDS scan events output
+BIDS_DATA_DIR = "../data/bids"
+BIDS_SESSION_ID = "01"
+
 # MONITOR / WINDOW
-# ===========================================================================
 
 MONITORS = {
     "Macbook": {
@@ -93,9 +64,9 @@ MONITORS = {
         "screen": 0,
     },
     "Scanner": {
-        "mon_dist": 113.7,        # cm, in-bore viewing distance
-        "size_cm": (35.4, 26.5), # measured projected image
-        "size_px": (1024, 768),   # actual scanner display mode
+        "mon_dist": 113.7,        # In-bore viewing distance (cm).
+        "size_cm": (35.4, 26.5), # Projected image size (cm).
+        "size_px": (1024, 768),
         "refresh_rate": 60,
         "screen": 0,
     },
@@ -103,91 +74,65 @@ MONITORS = {
 
 DEFAULT_MONITOR = "Scanner"
 
-# Match the local pRF experiment's real 1024x768 @ 60 Hz display mode.
-# Monitor/GPU scaling supplies any physical side bars, just as for MATLAB.
+# Request the pRF display mode; the monitor/GPU supplies side bars.
 FULLSCREEN = True
-MATCH_PRF_DISPLAY_MODE = True  # applied to the Scanner profile
+MATCH_PRF_DISPLAY_MODE = True  # Scanner only.
 ALLOW_GUI = False
 
-# PsychoPy rgb color space: values are in [-1, 1].
-BACK_COLOR = [2 * 127 / 255 - 1] * 3  # pRF grayval = uint8(127)
+BACK_COLOR = [2 * 127 / 255 - 1] * 3  # pRF gray level: 127/255.
 
-# ===========================================================================
 # EYELINK
-# ===========================================================================
 
 EYELINK_HOST = "100.1.1.1"
 EYELINK_CALIBRATION_TYPE = "HV9"
 EYELINK_CALIBRATION_TARGET_SIZE_PX = 24
 
-# Same default behavior as the source experiment: GUI can switch to dummy mode.
 DEFAULT_EYELINK_CONNECTED = "yes"
 
-# Optional trial-start fixation gate. The source experiment contains this
-# functionality but skipped it in the current scan task. Leave False to stay
-# faithful to that behavior; EyeLink data are still recorded continuously.
+# Optional trial-start fixation gate; recording does not require it.
 REQUIRE_FIXATION_BEFORE_TRIAL = False
 FIXATION_GATE_DURATION_S = 0.2
 FIXATION_GATE_RADIUS_DVA = 1.5
 EYE_USED = 1  # 1 = right, 0 = left
 
-# ===========================================================================
 # SCANNER
-# ===========================================================================
 
 SCANNER_TRIGGER_KEY = "5"
-# Acquisition metadata. Stimulus timings below are already in seconds;
-# do not multiply them by TR or wait for a pulse for each stimulus step.
+# Acquisition metadata; stimulus durations are in seconds.
 SCANNER_TR_S = 2.0
 
-# ===========================================================================
 # ONE-HEMIFIELD SPATIAL LAYOUT
-# ===========================================================================
 
-# Match code/Current_pRF_Design.docx: fixation 4 dva from the left edge.
-# Scanner fixation rounds to -282 px; probes follow the frame midpoint.
+# Fixation is 4 dva from the screen edge, mirrored by hemifield.
 HEMIFIELD = "right"
 
-# Same width-based calibration as pRF; left hemifield mirrors the right plan.
+# Use the pRF width-based calibration.
 FIXATION_ECCENTRICITY_DVA = (
     MONITORS["Scanner"]["size_cm"][0]
     / (2 * MONITORS["Scanner"]["mon_dist"] * 0.017455)
     - 4.0
 )
-# STIMULUS_ECCENTRICITY_DVA is set from FRAME_CENTER_DVA below.
 
 FIXATION_Y_DVA = 0.0
 STIMULUS_Y_DVA = 0.0
 
 # Fixation / attention task
-#
-# Reproduces cvnlab/knkutils/pt/runretinotopy.m:
-#   fixationsize = 4 pixels
-#   colors = red, black, white
-#   alpha = 0.5
-#   meanchange = 3 s
-#   changeplusminus = 2 s
-#
-# The fixation dot is therefore a 4-pixel DIAMETER disc with no border.
 FIXATION_DIAMETER_PX = 4
 FIXATION_ALPHA = 0.5
 FIXATION_COLORS_RGB255 = [
-    [255, 0, 0],       # red
-    [0, 0, 0],         # black
-    [255, 255, 255],   # white
+    [255, 0, 0],
+    [0, 0, 0],
+    [255, 255, 255],
 ]
 FIXATION_COLOR_NAMES = ["red", "black", "white"]
 
-# Exact temporal rule from runretinotopy.m:
-# frameduration=4 at 60 Hz -> 15 fixation-task frames/s.
-# The random SOA is approximately 1-5 s, quantized to 1/15 s.
+# One random fixation change in approximately 50% of scan blocks.
 FIXATION_TASK_HZ = 15.0
-FIXATION_CHANGE_MEAN_S = 15.0
-FIXATION_CHANGE_PLUS_MINUS_S = 5.0
+FIXATION_BLOCK_CHANGE_FRACTION = 0.5
+FIXATION_CHANGE_EDGE_MARGIN_S = 1
 
-# Kay's public instructions say "press a button whenever the dot color changes"
-# but do not prescribe one specific response key.
 FIXATION_RESPONSE_KEYS = ["1", "2", "3", "4"]
+FIXATION_RESPONSE_WINDOW_S = 1.0
 
 # Probes
 DOT_RADIUS_DVA = 0.7
@@ -199,8 +144,7 @@ FRAME_WIDTH_DVA = 7.5
 FRAME_HEIGHT_DVA = 9.0
 FRAME_LINEWIDTH_DVA = 0.25
 FRAME_COLOR = [0.3, 0.3, 0.3]
-# Scanner frame bounds: nearest rendered edge is 2 dva from fixation.
-# Include the Rect's 1-pixel outline and leave a visible far-edge margin.
+# Frame bounds include the outline and screen margin.
 FRAME_FIXATION_GAP_DVA = 1.0
 FRAME_SCREEN_MARGIN_DVA = 0.5
 _SCANNER_PPD = (
@@ -216,7 +160,6 @@ _FRAME_FAR_EDGE_DVA = (
     MONITORS["Scanner"]["size_px"][0] / 2 - FRAME_SCREEN_MARGIN_DVA * _SCANNER_PPD
 ) / _SCANNER_PPD
 FRAME_CENTER_DVA = (_FRAME_NEAR_EDGE_DVA + _FRAME_FAR_EDGE_DVA) / 2
-# Center both probes and prescan markers on the revised frame sweep.
 STIMULUS_ECCENTRICITY_DVA = FRAME_CENTER_DVA
 FRAME_TRAVEL_DVA = (
     _FRAME_FAR_EDGE_DVA - _FRAME_NEAR_EDGE_DVA
@@ -225,13 +168,10 @@ FRAME_TRAVEL_DVA = (
 if FRAME_TRAVEL_DVA <= 0:
     raise ValueError("Frame cannot fit between fixation clearance and screen edge")
 
-# Main thesis stimulus uses checkerboard probes.
 STIMULUS_CHOICES = ["checkerboard", "plain", "old"]
-DEFAULT_STIMULUS = "checkerboard"
+DEFAULT_STIMULUS = "plain"
 
-# ===========================================================================
 # TEMPORAL PARAMETERS
-# ===========================================================================
 
 PRESCAN = {
     "n_trials": 16,
@@ -246,23 +186,21 @@ PRESCAN = {
 }
 
 SCAN = {
-    "n_trials": 28,
+    "n_trials": 21,
     "n_runs": 10,
-    "n_blocks": 3,  # 3 mini-blocks: 3/3/2 FIPS, 2/1/1 Veridical, 3/3/2 Perceptual, 3/3/2 FrameOnly
-    "cycle": 8,
-    "pre_run_baseline": 15.0,
-    "post_run_baseline": 15.0,
+    "n_blocks": 3,  # One trial per analysis condition in each mini-block.
+    "cycle": 10,
+    "pre_run_baseline": 12.0,
+    "post_run_baseline": 12.0,
     "dot_duration": 50 / 1000,
     "reversal_time": 450 / 1000,
-    "ITI": 6.0,
+    "ITI": 8.0,
 }
 
-# 450 ms movement + 50 ms flash = 500 ms half-cycle.
-# 16 half-cycles = 8 s/trial.
+# 450 ms motion + 50 ms flash per half-cycle.
+# Scan: 10 cycles (10 s); prescan: 8 cycles (8 s).
 
-# ===========================================================================
 # SCAN CONDITIONS
-# ===========================================================================
 
 COND_FIPS = "FIPS"
 COND_VERIDICAL = "Veridical"
@@ -277,8 +215,6 @@ SCAN_CONDITIONS = [
 ]
 
 
-# ===========================================================================
 # TESTING
-# ===========================================================================
 
 CODE_TEST_N_TRIALS = 4

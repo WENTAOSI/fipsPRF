@@ -303,8 +303,13 @@ class _NoFileLog:
 logFile = _NoFileLog()
 logging.console.setLevel(logging.WARNING)
 
-# EyeLink Host filenames must be short (e.g. 01FIPS01.EDF).
-edf_fname = f"{sub_id}{TASK[:4].upper()}{run_id}"
+# EyeLink Host filenames must not exceed 8 characters.
+edf_task = "PRES" if expInfo["ses"] == "prescan" else TASK[:4].upper()
+edf_fname = f"{sub_id}{edf_task}{run_id}"
+
+if len(edf_fname) > 8:
+    raise ValueError(f"EyeLink filename exceeds 8 characters: {edf_fname}")
+
 edf_file = edf_fname + ".EDF"
 
 # Include the run to avoid overwriting local EDF files.
@@ -315,9 +320,7 @@ session_folder = EDFDIR / session_identifier
 session_folder.mkdir(parents=True, exist_ok=True)
 local_edf = session_folder / f"{session_identifier}.EDF"
 
-
 # LOAD PRESCAN SUMMARY
-
 PRESCAN_LEFT = 0.0
 PRESCAN_RIGHT = 0.0
 PRESCAN_AVG = 0.0
@@ -326,6 +329,14 @@ predataName = (
     SUBDIR
     / f"sub-{sub_id}_{expInfo['sub_name']}_{TASK}_prescan_summary.csv"
 )
+
+# Prevent accidental overwriting of existing prescan data.
+if expInfo["ses"] == "prescan" and predataName.exists():
+    raise FileExistsError(
+        f"Prescan data already exists:\n{predataName}\n\n"
+        "Back up or rename the existing file before "
+        "starting a new prescan."
+    )
 
 use_fake_prescan = (
     cfg.PREVIEW_MODE
@@ -358,9 +369,24 @@ if use_fake_prescan:
     print(prescan_text)
     print("**************************************\n")
 
+
+elif (
+    expInfo["ses"] == "scan"
+    and cfg.SCAN_RUN_TYPES[
+        (int(expInfo["run"]) - 1) % len(cfg.SCAN_RUN_TYPES)
+    ] == "A"
+):
+    prescan_text = "Run A: prescan measurements not required."
+
 elif predataName.exists():
     prescan_summary_df = pd.read_csv(predataName)
-    if expInfo["ses"] == "scan":
+    if (
+        expInfo["ses"] == "scan"
+        and cfg.SCAN_RUN_TYPES[
+            (int(expInfo["run"]) - 1) % len(cfg.SCAN_RUN_TYPES)
+        ] == "B"
+    ):
+
         required = ["left", "right", "avg"]
 
         if (
@@ -374,6 +400,28 @@ elif predataName.exists():
     PRESCAN_LEFT = float(prescan_summary_df.loc[0, "left"])
     PRESCAN_RIGHT = float(prescan_summary_df.loc[0, "right"])
     PRESCAN_AVG = float(prescan_summary_df.loc[0, "avg"])
+
+    # Validate participant-specific displacements before Run B.
+    if (
+        expInfo["ses"] == "scan"
+        and cfg.SCAN_RUN_TYPES[
+            (int(expInfo["run"]) - 1) % len(cfg.SCAN_RUN_TYPES)
+        ] == "B"
+    ):
+        values = [PRESCAN_LEFT, PRESCAN_RIGHT, PRESCAN_AVG]
+
+        if not all(np.isfinite(value) and value >= 0 for value in values):
+            raise ValueError(
+                "Invalid prescan displacement values. "
+                "All values must be finite and nonnegative."
+            )
+
+        if PRESCAN_LEFT == 0 and PRESCAN_RIGHT == 0:
+            raise ValueError(
+                "Both prescan displacements are zero. "
+                "Verify the participant's prescan measurements."
+            )
+
     prescan_text = (
         "Loaded prescan summary:\n"
         f"Left: {PRESCAN_LEFT:.3f} dva\n"
@@ -572,96 +620,114 @@ def source_initial_direction(induced_percept):
     """Frame direction for upper-first flashes and the requested tilt."""
     return "right" if induced_percept == "left" else "left"
 
+def build_scan_trials(run_number):
+    """Build balanced, randomized mini-blocks for Run A or B."""
 
-def six_fips_trials():
-    """Three upper-first trials per FIPS tilt."""
-    trials = []
-    for induced_percept in ("left", "right"):
-        direction = source_initial_direction(induced_percept)
-        frame_start = "left" if direction == "right" else "right"
-        for _ in range(3):
-            trials.append({
+    run_type = cfg.SCAN_RUN_TYPES[
+        (run_number - 1) % len(cfg.SCAN_RUN_TYPES)
+    ]
+
+    if run_type == "A":
+        conditions = cfg.RUN_A_CONDITIONS
+        counts = cfg.RUN_A_TRIAL_COUNTS
+    elif run_type == "B":
+        conditions = cfg.RUN_B_CONDITIONS
+        counts = cfg.RUN_B_TRIAL_COUNTS
+    else:
+        raise ValueError(f"Unknown run type: {run_type}")
+
+    if set(conditions) != set(counts):
+        raise ValueError(
+            f"Run {run_type}: conditions and counts do not match"
+        )
+
+    if any(not isinstance(n, int) or n < 0 for n in counts.values()):
+        raise ValueError("Trial counts must be nonnegative integers")
+
+    n_blocks = max(counts.values(), default=0)
+
+    if n_blocks == 0:
+        raise ValueError(f"Run {run_type} has no trials")
+
+    def make_trial(label):
+        if label == "veridical":
+            return {
+                "ExpCondition": cfg.COND_VERIDICAL,
+                "InitialPosition": "upper",
+                "InducedPercept": "none",
+                "InitialDirection": "NA",
+            }
+
+        kind, _, side = label.rpartition("_")
+
+        if side not in ("left", "right"):
+            raise ValueError(f"Unknown condition: {label}")
+
+        if kind == "fips":
+            direction = source_initial_direction(side)
+            frame_start = "left" if direction == "right" else "right"
+
+            return {
                 "ExpCondition": cfg.COND_FIPS,
                 "InitialPosition": "upper",
-                "InducedPercept": induced_percept,
+                "InducedPercept": side,
                 "InitialDirection": direction,
                 "FrameStartPosition": frame_start,
-                "FIPSCategory": f"{induced_percept}_tilt_frame_starts_{frame_start}",
-            })
+                "FIPSCategory": (
+                    f"{side}_tilt_frame_starts_{frame_start}"
+                ),
+            }
+
+        if kind == "frame_only_starts":
+            direction = "right" if side == "left" else "left"
+
+            return {
+                "ExpCondition": cfg.COND_FRAME_ONLY,
+                "InitialPosition": "NA",
+                "InducedPercept": "none",
+                "InitialDirection": direction,
+                "FrameStartPosition": side,
+            }
+
+        if kind == "perceptual":
+            return {
+                "ExpCondition": cfg.COND_PERCEPTUAL,
+                "InitialPosition": "upper",
+                "InducedPercept": side,
+                "InitialDirection": "NA",
+            }
+
+        raise ValueError(f"Unknown condition: {label}")
+
+    # Distribute trials across balanced mini-blocks.
+    blocks = [[] for _ in range(n_blocks)]
+
+    for label in conditions:
+        count = counts[label]
+
+        if count == 0:
+            continue
+
+        candidates = np.random.permutation(n_blocks).tolist()
+        candidates.sort(key=lambda index: len(blocks[index]))
+
+        for block_index in candidates[:count]:
+            blocks[block_index].append(make_trial(label))
+
+    # Randomize trials within each mini-block.
+    trials = []
+
+    for block_number, block_trials in enumerate(blocks, start=1):
+        np.random.shuffle(block_trials)
+
+        for trial in block_trials:
+            trial["Block"] = block_number
+            trial["Run"] = run_number
+            trial["RunType"] = run_type
+            trial["Trial"] = len(trials) + 1
+            trials.append(trial)
+
     return trials
-
-
-def six_perceptual_trials():
-    """Three upper-first trials per physical tilt."""
-    return [
-        {
-            "ExpCondition": cfg.COND_PERCEPTUAL,
-            "InitialPosition": "upper",
-            "InducedPercept": tilt,
-            "InitialDirection": "NA",
-        }
-        for tilt in ("left", "right")
-        for _ in range(3)
-    ]
-
-
-def three_veridical_trials():
-    return [
-        {
-            "ExpCondition": cfg.COND_VERIDICAL,
-            "InitialPosition": "upper",
-            "InducedPercept": "none",
-            "InitialDirection": "NA",
-        }
-        for _ in range(3)
-    ]
-
-
-def six_frame_only_trials():
-    return [
-        {
-            "ExpCondition": cfg.COND_FRAME_ONLY,
-            "InitialPosition": "NA",
-            "InducedPercept": "none",
-            "InitialDirection": direction,
-            "FrameStartPosition": "left" if direction == "right" else "right",
-        }
-        for direction in ["left", "right"] * 3
-    ]
-
-
-def build_scan_trials(run_number):
-    """Three randomized mini-blocks, each with one trial per analysis condition."""
-    fips = six_fips_trials()
-    perceptual = six_perceptual_trials()
-    veridical = three_veridical_trials()
-    frame_only = six_frame_only_trials()
-
-    all_trials = []
-
-    for block_index in range(3):
-        block_trials = [
-            fips[block_index],
-            fips[block_index + 3],
-            perceptual[block_index],
-            perceptual[block_index + 3],
-            veridical[block_index],
-            frame_only[2 * block_index],
-            frame_only[2 * block_index + 1],
-        ]
-        block_trials = np.random.permutation(block_trials).tolist()
-
-        for t in block_trials:
-            t["Block"] = block_index + 1
-
-        all_trials.extend(copy.deepcopy(block_trials))
-
-    for idx, trial in enumerate(all_trials, start=1):
-        trial["Run"] = run_number
-        trial["Trial"] = idx
-
-    return all_trials
-
 
 def build_prescan_trials():
     factor_prescan = {
@@ -1491,6 +1557,41 @@ def bids_trial_type(trial):
     raise ValueError(f"Unknown scan condition: {condition!r}")
 
 
+# VALIDATE SCAN TRIAL COUNTS
+
+if expInfo["ses"] == "scan" and not CODE_TEST:
+    run_type = TRIALS[0]["RunType"]
+
+    if run_type == "A":
+        expected = cfg.RUN_A_TRIAL_COUNTS
+    elif run_type == "B":
+        expected = cfg.RUN_B_TRIAL_COUNTS
+    else:
+        raise ValueError(f"Unknown run type: {run_type}")
+
+    actual = {condition: 0 for condition in expected}
+
+    for trial in TRIALS:
+        if trial["RunType"] != run_type:
+            raise ValueError("Mixed run types detected")
+
+        condition = bids_trial_type(trial)
+
+        if condition not in actual:
+            raise ValueError(
+                f"Unexpected condition in Run {run_type}: {condition}"
+            )
+
+        actual[condition] += 1
+
+    if actual != expected:
+        raise ValueError(
+            f"Run {run_type} trial counts do not match.\n"
+            f"Expected: {expected}\n"
+            f"Actual: {actual}"
+        )
+
+
 def save_bids_events(run_end_s):
     """Write one events.tsv row per trial, ITI, and baseline."""
     if BIDS_EVENTS_NAME is None or not dataFile or fixation_task is None:
@@ -1823,22 +1924,35 @@ def show_stimulus(
     trial["scheduled_onset_run_s"] = scheduled_onset
     trial["scheduled_offset_run_s"] = scheduled_offset
 
+    # Present the scan stimulus for an exact number of frames.
+    refresh_hz = float(monInfo["refresh_rate"])
+    exact_frames = stim_config["duration_stimulus"] * refresh_hz
+    n_frames = round(exact_frames)
+
+    if abs(exact_frames - n_frames) > 1e-6:
+        raise ValueError(
+            "Stimulus duration must correspond to a whole "
+            f"number of frames. Got {exact_frames}."
+        )
+
+    def stamp_flip(field):
+        """Record the display flip relative to scanner trigger."""
+        trial[field] = exp_clock.getTime()
+
     expWin.recordFrameIntervals = True
-    trial_clock = core.Clock()
-    trial_clock.reset()
-
     dot_counter = 0
-    onset_sent = False
 
-
-    while trial_clock.getTime() < stim_config["duration_stimulus"]:
-        time_elapsed = trial_clock.getTime()
+    for frame_index in range(n_frames):
+        # Use the center of each frame interval for flash timing.
+        # At 60 Hz: 27 movement frames + 3 flash frames.
+        flash_time_s = (frame_index + 0.5) / refresh_hz
+        motion_time_s = frame_index / refresh_hz
 
         update_fixation_task(exp_clock.getTime())
 
         if probes_present:
             _, dot_counter = update_dots_by_clock(
-                time_elapsed,
+                flash_time_s,
                 dot_color,
                 dot_counter,
             )
@@ -1848,11 +1962,14 @@ def show_stimulus(
         if frame_present:
             shift_frames_by_clock(
                 dir_factor,
-                time_elapsed,
+                motion_time_s,
                 frame_default_pos,
             )
 
-        if not onset_sent:
+        if frame_index == 0:
+            expWin.callOnFlip(
+                stamp_flip, "stim_onset_run_s"
+            )
             expWin.callOnFlip(
                 el_tracker.sendMessage,
                 f"STIM_ON {nt_label}",
@@ -1860,20 +1977,19 @@ def show_stimulus(
 
         expWin.flip()
 
-        if not onset_sent:
-            trial["stim_onset_run_s"] = exp_clock.getTime()
-            onset_sent = True
-
         if collect_fixation_task_keys():
             terminate_task()
 
+    # Switch to fixation only after 600 stimulus frames.
     prepare_fixation_only_screen()
+
+    expWin.callOnFlip(
+        stamp_flip, "stim_offset_run_s"
+    )
+    expWin.flip()
 
     expWin.recordFrameIntervals = False
 
-    expWin.flip()
-
-    trial["stim_offset_run_s"] = exp_clock.getTime()
 
 
     el_tracker.sendMessage(f"STIM_OFF {nt_label}")
@@ -2075,23 +2191,32 @@ def test_stimulus(trial):
 # RUN
 
 if expInfo["ses"] == "scan":
-    if use_fake_prescan:
-        show_msg(expWin, prescan_text, True)
+    run_type = TRIALS[0]["RunType"]
 
-    elif not predataName.exists():
+    if run_type == "B" and not use_fake_prescan and not predataName.exists():
         show_msg(
             expWin,
-            "WARNING: no prescan summary was found.\n\n"
-            "The Perceptual condition cannot run correctly "
-            "without participant-specific displacement values.\n\n"
-            "Real scan mode requires a participant prescan.",
+            "ERROR: Run B requires prescan measurements.\n\n"
+            "Complete the participant's prescan before continuing.",
             True,
         )
+        terminate_task()
 
-    else:
-        show_msg(expWin, prescan_text, True)
+    # Screen 2: Experiment information.
+    show_msg(
+        expWin,
+        f"FIPS Run {expInfo['run']} — Type {run_type}\n"
+        f"Trials: {len(TRIALS)}\n"
+        f"Duration: {planned_run_s:.0f} seconds "
+        f"({planned_run_s / cfg.SCANNER_TR_S:g} TRs)\n\n"
+        + task_text,
+        True,
+    )
 
-    show_msg(expWin, task_text, True)
+    # Preserve prescan information for real EyeLink scans.
+    if not DUMMY_SCAN:
+        if use_fake_prescan or predataName.exists():
+            show_msg(expWin, prescan_text, True)
 
 
 # EyeLink calibration
@@ -2111,27 +2236,56 @@ if EYELINK_CONNECTED:
         print("ERROR:", err)
         el_tracker.exitCalibration()
 
-else:
-    eyelink_msg = (
-        "Running EyeLink in Dummy mode.\n\n"
-        "Press any key to continue."
-    )
-    show_msg(expWin, eyelink_msg)
-
 
 # Scanner trigger
 
-show_msg(
-    expWin,
-    (
+if DUMMY_SCAN:
+    # Screen 3: Dummy prescan values.
+    # Pressing 5 here starts the experiment directly.
+    show_msg(
+        expWin,
+        prescan_text
+        + f"\n\nPress {cfg.SCANNER_TRIGGER_KEY} to start.",
+        wait_for_keypress=False,
+    )
+
+    # Start dummy EyeLink recording before the trigger.
+    el_tracker.startRecording(1, 1, 1, 1)
+
+elif expInfo["ses"] == "scan":
+    # Real scanner: preserve fixation before the trigger.
+    _set_fixation_color(0)
+    prepare_fixation_only_screen()
+    expWin.color = stim_config["backColor"]
+    expWin.flip(clearBuffer=True)
+
+    el_tracker.startRecording(1, 1, 1, 1)
+
+    print(
         f"Waiting for scanner signal "
         f"({cfg.SCANNER_TRIGGER_KEY})..."
-    ),
-    False,
-)
+    )
 
+else:
+    # Preserve prescan behavior.
+    show_msg(
+        expWin,
+        f"Waiting for scanner signal "
+        f"({cfg.SCANNER_TRIGGER_KEY})...",
+        False,
+    )
+
+event.clearEvents()
 event.waitKeys(keyList=[cfg.SCANNER_TRIGGER_KEY])
 
+if DUMMY_SCAN:
+    # Replace the dummy prescan screen with fixation.
+    _set_fixation_color(0)
+    prepare_fixation_only_screen()
+    expWin.color = stim_config["backColor"]
+    expWin.flip(clearBuffer=True)
+
+# The scanner trigger establishes time zero.
 exp_clock = core.Clock()
 logging.setDefaultClock(exp_clock)
 t_start = exp_clock.getTime()
@@ -2145,16 +2299,21 @@ logFile.write(
 
 dataFile = []
 
-prepare_fixation_only_screen()
+if expInfo["ses"] != "scan":
+    prepare_fixation_only_screen()
+    expWin.color = stim_config["backColor"]
+    expWin.flip(clearBuffer=True)
+    el_tracker.startRecording(1, 1, 1, 1)
 
-expWin.color = stim_config["backColor"]
-expWin.flip(clearBuffer=True)
-
-el_tracker.startRecording(1, 1, 1, 1)
 el_tracker.sendMessage("RUN_START")
 
+
 if expInfo["ses"] == "scan":
+    el_tracker.sendMessage(
+        f"RUN_TYPE {TRIALS[0]['RunType']}"
+    )
     start_fixation_task(start_run_s=0.0)
+
 
 when_to_flip = exp["pre_run_baseline"]
 
@@ -2208,8 +2367,10 @@ for trial_index, trial in enumerate(TRIALS):
 
 if expInfo["ses"] == "scan":
     post_baseline_end = (
-        when_to_flip + exp["post_run_baseline"]
+        max(when_to_flip, dataFile[-1]["stim_offset_run_s"])
+        + exp["post_run_baseline"]
     )
+
 
     run_fixation_until(post_baseline_end)
     save_bids_events(run_end_s=exp_clock.getTime())

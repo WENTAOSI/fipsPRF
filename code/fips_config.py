@@ -1,8 +1,26 @@
-"""One-hemifield FIPS settings.
 
-Scan: 21 trials in 3 balanced mini-blocks; 10 s stimuli, 8 s between-trial
-ITIs, and 12 s pre/post baselines. Each run lasts 394 s (197 TRs at 2 s).
-Perceptual displacements come from the participant’s prescan summary."""
+"""One-hemifield FIPS experiment settings.
+
+Scan runs alternate between two types:
+
+Run A: FIPS Left/Right and Frame Only Left/Right.
+       20 trials in 5 balanced mini-blocks.
+       Duration: 368 s (184 TRs).
+
+Run B: Perceptual Left/Right and Veridical.
+       15 trials in 5 balanced mini-blocks.
+       Duration: 278 s (139 TRs).
+
+Each stimulus lasts 10 s, with 8 s ITIs and
+8 s pre/post baselines. Scanner TR = 2 s.
+
+Trial counts are configurable, and run durations
+are calculated automatically.
+
+Perceptual displacements come from the participant's
+prescan summary.
+"""
+
 
 # DEBUG / TASK
 
@@ -185,17 +203,21 @@ PRESCAN = {
     "ITI": 2 / 1000,
 }
 
+
 SCAN = {
-    "n_trials": 21,
     "n_runs": 10,
-    "n_blocks": 3,  # One trial per analysis condition in each mini-block.
     "cycle": 10,
-    "pre_run_baseline": 12.0,
-    "post_run_baseline": 12.0,
+    "pre_run_baseline": 8.0,
+    "post_run_baseline": 8.0,
     "dot_duration": 50 / 1000,
     "reversal_time": 450 / 1000,
     "ITI": 8.0,
 }
+
+
+# SCAN RUN TYPES
+SCAN_RUN_TYPES = ["A", "B"]
+
 
 # 450 ms motion + 50 ms flash per half-cycle.
 # Scan: 10 cycles (10 s); prescan: 8 cycles (8 s).
@@ -215,6 +237,34 @@ SCAN_CONDITIONS = [
 ]
 
 
-# TESTING
+# RUN A CONDITIONS
+RUN_A_CONDITIONS = [
+    "fips_left",
+    "fips_right",
+    "frame_only_starts_left",
+    "frame_only_starts_right",
+]
 
+# RUN B CONDITIONS
+RUN_B_CONDITIONS = [
+    "perceptual_left",
+    "perceptual_right",
+    "veridical",
+]
+
+# NUMBER OF TRIALS PER CONDITION PER RUN
+RUN_A_TRIAL_COUNTS = {
+    "fips_left": 5,
+    "fips_right": 5,
+    "frame_only_starts_left": 5,
+    "frame_only_starts_right": 5,
+}
+
+RUN_B_TRIAL_COUNTS = {
+    "perceptual_left": 5,
+    "perceptual_right": 5,
+    "veridical": 5,
+}
+
+# TESTING
 CODE_TEST_N_TRIALS = 4

@@ -610,6 +610,19 @@ exp = copy.deepcopy(
     cfg.SCAN if expInfo["ses"] == "scan" else cfg.PRESCAN
 )
 
+if expInfo["ses"] == "scan":
+    run_type = cfg.SCAN_RUN_TYPES[
+        (int(expInfo["run"]) - 1) % len(cfg.SCAN_RUN_TYPES)
+    ]
+
+    iti_enabled = {
+        "A": cfg.RUN_A_ITI_ENABLED,
+        "B": cfg.RUN_B_ITI_ENABLED,
+    }[run_type]
+
+    if not iti_enabled:
+        exp["ITI"] = 0.0
+
 if CODE_TEST:
     exp["n_trials"] = cfg.CODE_TEST_N_TRIALS
 
@@ -1346,7 +1359,7 @@ def _build_fixation_block_schedule(start_run_s=0.0):
             trial["Trial"],
         )
 
-        if index < len(TRIALS) - 1:
+        if index < len(TRIALS) - 1 and exp["ITI"] > 0:
             add_block("ITI", exp["ITI"], trial["Trial"])
 
     add_block("post_baseline", exp["post_run_baseline"])
@@ -1652,7 +1665,7 @@ def save_bids_events(run_end_s):
 
         add_row(onset, offset, bids_trial_type(trial))
 
-        if index + 1 < len(dataFile):
+        if index + 1 < len(dataFile) and exp["ITI"] > 0:
             next_onset = dataFile[index + 1]["stim_onset_run_s"]
             add_row(offset, next_onset, "iti")
 
@@ -2334,10 +2347,10 @@ for trial_index, trial in enumerate(TRIALS):
         )
 
         trial, when_to_flip = show_stimulus(
-            trial,
-            when_to_flip,
-            add_iti_after=not is_last_trial,
-        )
+        trial,
+        when_to_flip,
+        add_iti_after=(not is_last_trial and exp["ITI"] > 0),
+    )
 
     else:
         test_stimulus(trial)

@@ -12,7 +12,7 @@ Run B: Perceptual Left/Right and Veridical.
        Duration: 278 s (139 TRs).
 
 Each stimulus lasts 10 s, with 8 s ITIs and
-8 s pre/post baselines. Scanner TR = 2 s.
+8 s pre/post baselines. Scanner TR = 1 s.
 
 Trial counts are configurable, and run durations
 are calculated automatically.
@@ -117,7 +117,7 @@ EYE_USED = 1  # 1 = right, 0 = left
 
 SCANNER_TRIGGER_KEY = "5"
 # Acquisition metadata; stimulus durations are in seconds.
-SCANNER_TR_S = 2.0
+SCANNER_TR_S = 1.0
 
 # ONE-HEMIFIELD SPATIAL LAYOUT
 
@@ -128,7 +128,7 @@ HEMIFIELD = "right"
 FIXATION_ECCENTRICITY_DVA = (
     MONITORS["Scanner"]["size_cm"][0]
     / (2 * MONITORS["Scanner"]["mon_dist"] * 0.017455)
-    - 4.0
+    - 3.0
 )
 
 FIXATION_Y_DVA = 0.0
@@ -217,6 +217,10 @@ SCAN = {
 
 # SCAN RUN TYPES
 SCAN_RUN_TYPES = ["A", "B"]
+
+# Enable or disable inter-trial intervals independently.
+RUN_A_ITI_ENABLED = True
+RUN_B_ITI_ENABLED = True
 
 
 # 450 ms motion + 50 ms flash per half-cycle.

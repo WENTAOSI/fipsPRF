@@ -5,11 +5,11 @@ Scan runs alternate between two types:
 
 Run A: FIPS Left/Right and Frame Only Left/Right.
        20 trials in 5 balanced mini-blocks.
-       Duration: 368 s (184 TRs).
+       Duration: 368 s (368 TRs at TR = 1 s).
 
 Run B: Perceptual Left/Right and Veridical.
        15 trials in 5 balanced mini-blocks.
-       Duration: 278 s (139 TRs).
+       Duration: 278 s (278 TRs at TR = 1 s).
 
 Each stimulus lasts 10 s, with 8 s ITIs and
 8 s pre/post baselines. Scanner TR = 1 s.

@@ -11,7 +11,6 @@ import copy
 import os
 import pandas as pd
 from pathlib import Path
-from datetime import datetime
 import sys
 
 import pylink
@@ -113,7 +112,6 @@ class PRFMatchedWindow(visual.Window):
 
 
 CODE_TEST = cfg.CODE_TEST
-DEBUG_ON_VSCODE = cfg.DEBUG_ON_VSCODE
 TASK = cfg.TASK
 
 
@@ -162,7 +160,34 @@ if existing_events:
             existing_runs.append(int(run_text))
 
     if existing_runs:
-        expInfo["run"] = str(max(existing_runs) + 1)
+        completed_runs = set(existing_runs)
+
+        remaining_runs = [
+            run_number
+            for run_number in cfg.FIPS_RUN_NUMBERS
+            if run_number not in completed_runs
+        ]
+
+        if remaining_runs:
+            expInfo["run"] = str(remaining_runs[0])
+        else:
+            # All FIPS runs are complete. Warn the operator,
+            # but allow manual run selection in the GUI.
+            expInfo["run"] = str(cfg.FIPS_RUN_NUMBERS[-1])
+
+            warning = gui.Dlg(title="All FIPS Runs Complete")
+            warning.addText(
+                f"All 10 FIPS runs have existing events files "
+                f"for {latest_subject}.\n\n"
+                "There are no remaining scheduled FIPS runs.\n\n"
+                "You may continue to the experiment setup dialog, "
+                "but existing output files cannot be overwritten."
+            )
+            warning.addText("Click OK to continue.")
+            warning.show()
+
+            if not warning.OK:
+                core.quit()
 
 # GUI
 
@@ -212,16 +237,21 @@ if expInfo["ses"] == "scan":
 
     warnings = []
 
-    # Warn if the run exceeds the configured maximum.
-    if selected_run > cfg.SCAN["n_runs"]:
-        warnings.append(
-            f"Run {selected_run} exceeds the configured maximum "
-            f"of {cfg.SCAN['n_runs']} runs."
+    # Only runs assigned to this FIPS program are valid.
+    if selected_run not in cfg.FIPS_RUN_NUMBERS:
+        raise ValueError(
+            f"Run {selected_run} is not a valid FIPS run. "
+            f"Valid runs: {cfg.FIPS_RUN_NUMBERS}"
         )
 
-    # Warn if the immediately preceding run does not exist.
-    if selected_run > 1:
-        previous_run = selected_run - 1
+    # Check the previous FIPS run, skipping pRF-only runs.
+    previous_fips_runs = [
+        run for run in cfg.FIPS_RUN_NUMBERS
+        if run < selected_run
+    ]
+
+    if previous_fips_runs:
+        previous_run = previous_fips_runs[-1]
         previous_run_id = f"{previous_run:02d}"
 
         previous_events = (
@@ -296,25 +326,26 @@ if expInfo["ses"] == "scan":
             "Choose a different run number to avoid overwriting data."
         )
 
-class _NoFileLog:
-    def write(self, message):
-        pass
-
-logFile = _NoFileLog()
 logging.console.setLevel(logging.WARNING)
 
 # EyeLink Host filenames must not exceed 8 characters.
 edf_task = "PRES" if expInfo["ses"] == "prescan" else TASK[:4].upper()
-edf_fname = f"{sub_id}{edf_task}{run_id}"
+edf_fname = (
+    f"{sub_id}{edf_task}"
+    if expInfo["ses"] == "prescan"
+    else f"{sub_id}{edf_task}{run_id}"
+)
 
 if len(edf_fname) > 8:
     raise ValueError(f"EyeLink filename exceeds 8 characters: {edf_fname}")
 
 edf_file = edf_fname + ".EDF"
 
-# Include the run to avoid overwriting local EDF files.
+# Prescan EDF files are unnumbered; scan EDF files include the run number.
 session_identifier = (
-    f"sub-{sub_id}_{expInfo['sub_name']}_{TASK}_{expInfo['ses']}_run-{run_id}"
+    f"sub-{sub_id}_{expInfo['sub_name']}_{TASK}_{expInfo['ses']}"
+    if expInfo["ses"] == "prescan"
+    else f"sub-{sub_id}_{expInfo['sub_name']}_{TASK}_{expInfo['ses']}_run-{run_id}"
 )
 session_folder = EDFDIR / session_identifier
 session_folder.mkdir(parents=True, exist_ok=True)
@@ -372,9 +403,7 @@ if use_fake_prescan:
 
 elif (
     expInfo["ses"] == "scan"
-    and cfg.SCAN_RUN_TYPES[
-        (int(expInfo["run"]) - 1) % len(cfg.SCAN_RUN_TYPES)
-    ] == "A"
+    and cfg.SCAN_RUN_TYPES[int(expInfo["run"])] == "A"
 ):
     prescan_text = "Run A: prescan measurements not required."
 
@@ -382,9 +411,7 @@ elif predataName.exists():
     prescan_summary_df = pd.read_csv(predataName)
     if (
         expInfo["ses"] == "scan"
-        and cfg.SCAN_RUN_TYPES[
-            (int(expInfo["run"]) - 1) % len(cfg.SCAN_RUN_TYPES)
-        ] == "B"
+        and cfg.SCAN_RUN_TYPES[int(expInfo["run"])] == "B"
     ):
 
         required = ["left", "right", "avg"]
@@ -404,9 +431,7 @@ elif predataName.exists():
     # Validate participant-specific displacements before Run B.
     if (
         expInfo["ses"] == "scan"
-        and cfg.SCAN_RUN_TYPES[
-            (int(expInfo["run"]) - 1) % len(cfg.SCAN_RUN_TYPES)
-        ] == "B"
+        and cfg.SCAN_RUN_TYPES[int(expInfo["run"])] == "B"
     ):
         values = [PRESCAN_LEFT, PRESCAN_RIGHT, PRESCAN_AVG]
 
@@ -463,19 +488,6 @@ expWin = PRFMatchedWindow(
     waitBlanking=True,
 )
 
-logFile.write(f"Actual display pixels = {tuple(expWin.frameBufferSize)}\n")
-
-logFile.write(f"Monitor: {monName}\n")
-logFile.write(
-    f"Distance = {monInfo['mon_dist']} cm, "
-    f"Width = {monInfo['size_cm'][0]} cm\n"
-)
-logFile.write(
-    f"Pixel Width = {monInfo['size_px'][0]}, "
-    f"Pixel Height = {monInfo['size_px'][1]}\n"
-)
-logFile.write(f"Refresh Rate = {monInfo['refresh_rate']} Hz\n")
-
 screen_width_cm = monInfo["size_cm"][0]
 screen_width_px = monInfo["size_px"][0]
 viewing_distance_cm = monInfo["mon_dist"]
@@ -494,8 +506,6 @@ if monName == "Macbook":
         * scanner_info["size_px"][0] / scanner_info["size_cm"][0]
         * render_scale
     )
-logFile.write(f"pRF render scale = {render_scale}; canvas = {expWin.letterbox_rect}\n")
-
 
 def deg2pix(dva):
     if isinstance(dva, (list, tuple, np.ndarray)):
@@ -530,10 +540,14 @@ experiment_info = (
     f"RECORDED BY {os.path.basename(__file__)}\n"
     f"Subject ID: {expInfo['sub_id']}\n"
     f"Session: {expInfo['ses']}\n"
-    f"Run: {expInfo['run']}\n"
-    f"Hemifield: {cfg.HEMIFIELD}\n"
-    f"Monitor: {expInfo['monitor']}\n"
-    f"Date: {expInfo['date']}"
+    + (
+        f"Run: {expInfo['run']}\n"
+        if expInfo["ses"] == "scan"
+        else ""
+    )
+    + f"Hemifield: {cfg.HEMIFIELD}\n"
+    + f"Monitor: {expInfo['monitor']}\n"
+    + f"Date: {expInfo['date']}"
 )
 el_tracker.sendCommand(f"add_file_preamble_text '{experiment_info}'")
 
@@ -611,9 +625,15 @@ exp = copy.deepcopy(
 )
 
 if expInfo["ses"] == "scan":
-    run_type = cfg.SCAN_RUN_TYPES[
-        (int(expInfo["run"]) - 1) % len(cfg.SCAN_RUN_TYPES)
-    ]
+    run_number = int(expInfo["run"])
+
+    if run_number not in cfg.FIPS_RUN_NUMBERS:
+        raise ValueError(
+            f"Run {run_number} is not a valid FIPS run. "
+            f"Valid runs: {cfg.FIPS_RUN_NUMBERS}"
+        )
+
+    run_type = cfg.SCAN_RUN_TYPES[run_number]
 
     iti_enabled = {
         "A": cfg.RUN_A_ITI_ENABLED,
@@ -636,23 +656,16 @@ def source_initial_direction(induced_percept):
 def build_scan_trials(run_number):
     """Build balanced, randomized mini-blocks for Run A or B."""
 
-    run_type = cfg.SCAN_RUN_TYPES[
-        (run_number - 1) % len(cfg.SCAN_RUN_TYPES)
-    ]
+    run_type = cfg.SCAN_RUN_TYPES[run_number]
 
     if run_type == "A":
-        conditions = cfg.RUN_A_CONDITIONS
         counts = cfg.RUN_A_TRIAL_COUNTS
     elif run_type == "B":
-        conditions = cfg.RUN_B_CONDITIONS
         counts = cfg.RUN_B_TRIAL_COUNTS
     else:
         raise ValueError(f"Unknown run type: {run_type}")
 
-    if set(conditions) != set(counts):
-        raise ValueError(
-            f"Run {run_type}: conditions and counts do not match"
-        )
+    conditions = list(counts)
 
     if any(not isinstance(n, int) or n < 0 for n in counts.values()):
         raise ValueError("Trial counts must be nonnegative integers")
@@ -761,7 +774,6 @@ def build_prescan_trials():
 
     for idx, trial in enumerate(trials, start=1):
         trial["Block"] = 1
-        trial["Run"] = int(expInfo["run"])
         trial["Trial"] = idx
         trial["InitialDirection"] = source_initial_direction(
             trial["InducedPercept"],
@@ -796,15 +808,12 @@ STIM_POS_DVA = [
 
 stim_config = {
     "backColor": cfg.BACK_COLOR,
-    "session": expInfo["ses"],
     # pRF fixation offsets are rounded to integer pixels.
     "fix_pos": (np.round(np.array(deg2pix(FIX_POS_DVA)) / render_scale) * render_scale).tolist(),
     "fix_diameter_px": cfg.FIXATION_DIAMETER_PX * render_scale,
     "fix_alpha": cfg.FIXATION_ALPHA,
     "stim_pos": deg2pix(STIM_POS_DVA),
-    "mark_pos": deg2pix(STIM_POS_DVA),
     "dot_radius": deg2pix(cfg.DOT_RADIUS_DVA),
-    "dot_diameter": deg2pix(cfg.DOT_DIAMETER_DVA),
     "center_offset_y": deg2pix(cfg.DOT_VERTICAL_OFFSET_DVA),
     "frame_width": deg2pix(cfg.FRAME_WIDTH_DVA),
     "frame_height": deg2pix(cfg.FRAME_HEIGHT_DVA),
@@ -813,12 +822,8 @@ stim_config = {
     "frame_travel": deg2pix(cfg.FRAME_TRAVEL_DVA),
     "frame_center_x": deg2pix(side_sign * cfg.FRAME_CENTER_DVA),
     "frame_per_sec": monInfo["refresh_rate"],
-    "sec_per_frame": 1 / monInfo["refresh_rate"],
     "n_frames_per_move": (
         exp["reversal_time"] * monInfo["refresh_rate"]
-    ),
-    "n_frames_per_pause": (
-        exp["dot_duration"] * monInfo["refresh_rate"]
     ),
 }
 
@@ -846,12 +851,6 @@ if expInfo["ses"] == "scan":
         + max(len(TRIALS) - 1, 0) * exp["ITI"]
         + exp["post_run_baseline"]
     )
-    logFile.write(
-        f"Scanner TR = {cfg.SCANNER_TR_S:.3f} s; "
-        f"planned run = {planned_run_s:.3f} s "
-        f"({planned_run_s / cfg.SCANNER_TR_S:g} TRs). "
-        "Stimulus schedule uses seconds from the first trigger.\n"
-    )
 
 expWin.colorSpace = "rgb"
 expWin.color = stim_config["backColor"]
@@ -875,19 +874,6 @@ fix_outer = visual.Circle(
     autoLog=False,
 )
 
-# Invisible inner fixation placeholder.
-fix_inner = visual.Circle(
-    win=expWin,
-    radius=0,
-    pos=stim_config["fix_pos"],
-    fillColor=[0, 0, 0],
-    lineColor=[0, 0, 0],
-    colorSpace="rgb255",
-    opacity=0,
-    autoLog=False,
-)
-
-
 # GENERATE DOTS / MARKERS
 
 dot_positions = [
@@ -903,12 +889,12 @@ dot_positions = [
 
 marker_positions = [
     [
-        stim_config["mark_pos"][0],
-        stim_config["mark_pos"][1] + stim_config["center_offset_y"],
+        stim_config["stim_pos"][0],
+        stim_config["stim_pos"][1] + stim_config["center_offset_y"],
     ],
     [
-        stim_config["mark_pos"][0],
-        stim_config["mark_pos"][1] - stim_config["center_offset_y"],
+        stim_config["stim_pos"][0],
+        stim_config["stim_pos"][1] - stim_config["center_offset_y"],
     ],
 ]
 
@@ -1171,12 +1157,12 @@ def move_dots(distance):
 def move_markers(distance):
     pos_list = [
         [
-            stim_config["mark_pos"][0] - distance,
-            stim_config["mark_pos"][1] + stim_config["center_offset_y"],
+            stim_config["stim_pos"][0] - distance,
+            stim_config["stim_pos"][1] + stim_config["center_offset_y"],
         ],
         [
-            stim_config["mark_pos"][0] + distance,
-            stim_config["mark_pos"][1] - stim_config["center_offset_y"],
+            stim_config["stim_pos"][0] + distance,
+            stim_config["stim_pos"][1] - stim_config["center_offset_y"],
         ],
     ]
 
@@ -1232,7 +1218,6 @@ def clear_screen(win):
     hide_all_dots(dots)
 
     fix_outer.autoDraw = False
-    fix_inner.autoDraw = False
     frame_outer.autoDraw = False
     frame_inner.autoDraw = False
 
@@ -1308,16 +1293,6 @@ def terminate_task():
     expWin.close()
     core.quit()
     sys.exit()
-
-
-def log_with_time():
-    now = datetime.now()
-    timestamp = (
-        now.strftime("%Y-%m-%d %H:%M:%S.")
-        + f"{now.microsecond // 1000:03d}"
-    )
-    logFile.write(f"[{timestamp}] ")
-
 
 # KAY RETINOTOPY FIXATION-COLOR ATTENTION TASK
 
@@ -1485,10 +1460,6 @@ def update_fixation_task(run_time_s):
                 "key": "",
             })
 
-            logFile.write(
-                f"WARNING: missed fixation change in block "
-                f"{block['block_number']} ({block['block_type']})\n"
-            )
             continue
 
         # Select a color different from the current color.
@@ -1685,11 +1656,6 @@ def save_bids_events(run_end_s):
         na_rep="n/a"
     )
 
-    logFile.write(
-        f"Saved {len(rows)} BIDS events: {BIDS_EVENTS_NAME}\n"
-    )
-
-
 def prepare_fixation_only_screen():
     """Hide the frame, probes, and comparison markers."""
     hide_all_dots(dots)
@@ -1699,7 +1665,6 @@ def prepare_fixation_only_screen():
     frame_inner.autoDraw = False
 
     fix_outer.autoDraw = True
-    fix_inner.autoDraw = True
 
 
 def run_fixation_until(target_run_s):
@@ -1733,7 +1698,6 @@ def check_fixation(
     fixation_radius_px = fix_radius_dva * ppd
 
     fix_outer.autoDraw = True
-    fix_inner.autoDraw = True
 
     fixation_validated = False
     gaze_start_time = None
@@ -1928,12 +1892,6 @@ def show_stimulus(
         f"!V TRIAL_VAR initial_direction {trial['InitialDirection']}"
     )
 
-    log_with_time()
-    logFile.write(
-        f"Trial {nt_label} Start; "
-        f"Condition={trial_type}\n"
-    )
-
     trial["scheduled_onset_run_s"] = scheduled_onset
     trial["scheduled_offset_run_s"] = scheduled_offset
 
@@ -1999,21 +1957,17 @@ def show_stimulus(
     expWin.callOnFlip(
         stamp_flip, "stim_offset_run_s"
     )
+    expWin.callOnFlip(
+        el_tracker.sendMessage,
+        f"STIM_OFF {nt_label}",
+    )
     expWin.flip()
 
     expWin.recordFrameIntervals = False
 
-
-
-    el_tracker.sendMessage(f"STIM_OFF {nt_label}")
     el_tracker.sendMessage(f"TRIAL END {nt_label}")
     el_tracker.sendMessage(
         "TRIAL_RESULT %d" % pylink.TRIAL_OK
-    )
-
-    log_with_time()
-    logFile.write(
-        f"Trial {nt_label} Stimulus Off\n"
     )
 
     return trial, next_onset
@@ -2056,11 +2010,6 @@ def test_stimulus(trial):
     )
     el_tracker.sendMessage(
         f"!V TRIAL_VAR initial_direction {trial['InitialDirection']}"
-    )
-
-    log_with_time()
-    logFile.write(
-        f"Prescan Trial {nt_label} Start\n"
     )
 
     expWin.recordFrameIntervals = True
@@ -2141,11 +2090,6 @@ def test_stimulus(trial):
                     f"TRIAL {nt_label}: response_saved"
                 )
 
-                log_with_time()
-                logFile.write(
-                    f"Prescan Trial {nt_label} Response Saved\n"
-                )
-
                 Resp = True
                 Show = False
 
@@ -2169,11 +2113,6 @@ def test_stimulus(trial):
                 )
 
                 t_duration += stim_config["duration_stimulus"]
-                log_with_time()
-                logFile.write(
-                    f"Prescan Trial {nt_label} "
-                    f"Switched to {trial_type}\n"
-                )
                 Show = False
 
     event.clearEvents()
@@ -2249,6 +2188,16 @@ if EYELINK_CONNECTED:
         print("ERROR:", err)
         el_tracker.exitCalibration()
 
+# Preview the actual EyeLink calibration target during dummy runs.
+if DUMMY_SCAN:
+    genv.setup_cal_display()
+    genv.draw_cal_target(scn_width // 2, scn_height // 2)
+
+    event.clearEvents()
+    event.waitKeys()
+
+    genv.exit_cal_display()
+    clear_screen(expWin)
 
 # Scanner trigger
 
@@ -2266,11 +2215,12 @@ if DUMMY_SCAN:
     el_tracker.startRecording(1, 1, 1, 1)
 
 elif expInfo["ses"] == "scan":
-    # Real scanner: preserve fixation before the trigger.
-    _set_fixation_color(0)
-    prepare_fixation_only_screen()
-    expWin.color = stim_config["backColor"]
-    expWin.flip(clearBuffer=True)
+    # Real scanner: display trigger-waiting message.
+    show_msg(
+        expWin,
+        f"Waiting for scanner signal ({cfg.SCANNER_TRIGGER_KEY})",
+        wait_for_keypress=False,
+    )
 
     el_tracker.startRecording(1, 1, 1, 1)
 
@@ -2301,14 +2251,6 @@ if DUMMY_SCAN:
 # The scanner trigger establishes time zero.
 exp_clock = core.Clock()
 logging.setDefaultClock(exp_clock)
-t_start = exp_clock.getTime()
-
-log_time = datetime.now().strftime(
-    "%Y-%m-%d %H:%M:%S"
-)
-logFile.write(
-    f"Run {expInfo['run']} started at {log_time}\n"
-)
 
 dataFile = []
 
@@ -2330,16 +2272,9 @@ if expInfo["ses"] == "scan":
 
 when_to_flip = exp["pre_run_baseline"]
 
-logFile.write(
-    f"Pre-run fixation baseline = "
-    f"{exp['pre_run_baseline']:.3f} s\n"
-)
-
-
 # Trial loop
 
 for trial_index, trial in enumerate(TRIALS):
-    tt_start = exp_clock.getTime()
 
     if expInfo["ses"] == "scan":
         is_last_trial = (
@@ -2354,11 +2289,6 @@ for trial_index, trial in enumerate(TRIALS):
 
     else:
         test_stimulus(trial)
-
-    trial_duration = exp_clock.getTime() - tt_start
-    logFile.write(
-        f"Trial Duration: {trial_duration:.3f} seconds\n"
-    )
 
     executed_trial = trial.copy()
     dataFile.append(executed_trial)
@@ -2389,29 +2319,16 @@ if expInfo["ses"] == "scan":
     save_bids_events(run_end_s=exp_clock.getTime())
 
     el_tracker.sendMessage("RUN_END")
-
-    logFile.write(
-        f"Post-run fixation baseline = "
-        f"{exp['post_run_baseline']:.3f} s\n"
-    )
 else:
     el_tracker.sendMessage("RUN_END")
 
 
 # WRAP UP
-
-t_end = exp_clock.getTime()
-exp_duration = t_end - t_start
-
-logFile.write(
-    f"The experiment took {exp_duration:.3f} seconds\n"
-)
-
 if expInfo["ses"] == "scan":
     current_run = int(expInfo["run"])
     end_text = (
         end_end_text
-        if current_run == exp["n_runs"]
+        if current_run == cfg.FIPS_RUN_NUMBERS[-1]
         else end_run_text
     )
 

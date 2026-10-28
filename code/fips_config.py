@@ -23,10 +23,7 @@ prescan summary.
 
 
 # DEBUG / TASK
-
 CODE_TEST = False
-DEBUG_ON_VSCODE = False
-
 TASK = "FIPS"
 
 # PREVIEW / DIMENSION TESTING
@@ -41,7 +38,7 @@ PREVIEW_PRESCAN_RIGHT_DVA = 0.75
 
 DEFAULT_SUB_ID = "99"
 DEFAULT_SUB_NAME = "PT"
-DEFAULT_RUN = "1"
+DEFAULT_RUN = "2"
 
 # Relative to fips_one_hemi.py.
 DATA_DIR = "../data/psycphys"
@@ -103,7 +100,15 @@ BACK_COLOR = [2 * 127 / 255 - 1] * 3  # pRF gray level: 127/255.
 
 EYELINK_HOST = "100.1.1.1"
 EYELINK_CALIBRATION_TYPE = "HV9"
-EYELINK_CALIBRATION_TARGET_SIZE_PX = 24
+EYELINK_CALIBRATION_TARGET_SIZE_DVA = 0.25
+
+EYELINK_CALIBRATION_TARGET_SIZE_PX = round(
+    EYELINK_CALIBRATION_TARGET_SIZE_DVA
+    * MONITORS["Scanner"]["mon_dist"]
+    * 0.017455
+    * MONITORS["Scanner"]["size_px"][0]
+    / MONITORS["Scanner"]["size_cm"][0]
+)
 
 DEFAULT_EYELINK_CONNECTED = "yes"
 
@@ -154,7 +159,6 @@ FIXATION_RESPONSE_WINDOW_S = 1.0
 
 # Probes
 DOT_RADIUS_DVA = 0.7
-DOT_DIAMETER_DVA = 1.4
 DOT_VERTICAL_OFFSET_DVA = 3.0
 
 # Moving frame
@@ -193,8 +197,6 @@ DEFAULT_STIMULUS = "plain"
 
 PRESCAN = {
     "n_trials": 16,
-    "n_runs": 1,
-    "n_blocks": 1,
     "cycle": 8,
     "pre_run_baseline": 0.0,
     "post_run_baseline": 0.0,
@@ -205,7 +207,6 @@ PRESCAN = {
 
 
 SCAN = {
-    "n_runs": 10,
     "cycle": 10,
     "pre_run_baseline": 8.0,
     "post_run_baseline": 8.0,
@@ -215,8 +216,30 @@ SCAN = {
 }
 
 
-# SCAN RUN TYPES
-SCAN_RUN_TYPES = ["A", "B"]
+# GLOBAL SCANNER RUN SCHEDULE
+# pRF runs are executed separately on another computer.
+SCAN_RUN_TYPES = {
+    1: "pRF",
+    2: "A",
+    3: "B",
+    4: "A",
+    5: "pRF",
+    6: "B",
+    7: "A",
+    8: "B",
+    9: "pRF",
+    10: "A",
+    11: "B",
+    12: "A",
+    13: "pRF",
+    14: "B",
+}
+
+FIPS_RUN_NUMBERS = [
+    number
+    for number, run_type in SCAN_RUN_TYPES.items()
+    if run_type in ("A", "B")
+]
 
 # Enable or disable inter-trial intervals independently.
 RUN_A_ITI_ENABLED = True
@@ -232,29 +255,6 @@ COND_FIPS = "FIPS"
 COND_VERIDICAL = "Veridical"
 COND_PERCEPTUAL = "Perceptual"
 COND_FRAME_ONLY = "FrameOnly"
-
-SCAN_CONDITIONS = [
-    COND_FIPS,
-    COND_VERIDICAL,
-    COND_PERCEPTUAL,
-    COND_FRAME_ONLY,
-]
-
-
-# RUN A CONDITIONS
-RUN_A_CONDITIONS = [
-    "fips_left",
-    "fips_right",
-    "frame_only_starts_left",
-    "frame_only_starts_right",
-]
-
-# RUN B CONDITIONS
-RUN_B_CONDITIONS = [
-    "perceptual_left",
-    "perceptual_right",
-    "veridical",
-]
 
 # NUMBER OF TRIALS PER CONDITION PER RUN
 RUN_A_TRIAL_COUNTS = {
